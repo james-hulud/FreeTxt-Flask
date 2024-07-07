@@ -33,7 +33,7 @@ class SentimentAnalyser:
         Initializes the SentimentAnalyser class, loading the tokenizer and model for sentiment analysis.
         """
         # Loading tokenizer and model during initialization to avoid doing it multiple times.
-        self.tokenizer = AutoTokenizer.from_pretrained("nlptown/bert-base-multilingual-uncased-sentiment")
+        self.tokenizer = AutoTokenizer.from_pretrained("nlptown/bert-base-multilingual-uncased-sentiment", use_fast=True)
         self.model = AutoModelForSequenceClassification.from_pretrained("nlptown/bert-base-multilingual-uncased-sentiment")
 
     def preprocess_text(self,text):
@@ -164,6 +164,7 @@ class SentimentAnalyser:
             minimum_term_frequency=5,
             pmi_threshold_coefficient=5,
             width_in_pixels=900,
+            width_in_pixels=900,
             metadata=df["Sentiment Label"],
             term_scorer=term_scorer
         ) 
@@ -200,7 +201,20 @@ class SentimentAnalyser:
             html = html.replace('documents','dogfennau')
             html = html.replace('Not found in any','Heb ei g/eu canfod o gwbl')
             html = html.replace('Some of the','Rhai o’r')
-            html = html.replace('mentions','crybwylliadau')
+            html = html.replace('mentions','crybwylliadau')        
+        # Prevents svg being cut off
+        custom_script = """
+        <script>
+         document.addEventListener("DOMContentLoaded", (event) => {
+            const scattertextDiv = document.getElementsByClassName("scattertext")[0];
+            const graphSVG = scattertextDiv.querySelector("svg");
+            
+            if (graphSVG) {
+                graphSVG.setAttribute("width", "1250");
+            }
+        });
+        </script>
+        """
 
         timestamp = int(time.time())
 

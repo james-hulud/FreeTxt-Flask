@@ -49,7 +49,6 @@ ALLOWED_EXTENSIONS = {'txt', 'csv', 'xls', 'xlsx','tsv'}
 import os
 os.environ["TRANSFORMERS_CACHE"] = "/freetxt/huggingface_cache"
 
-
 from PIL import Image
 logo_path = "/freetxt/website/static/images/logo.png"
 def append_logo_to_image(image_path, logo_path, output_path):
@@ -329,7 +328,7 @@ def sentiment_analysis(sentences,language, sentiment_classes=3):
     results = analyser.analyse_sentiment(sentences,language,sentiment_classes)
     if results:
         sentiments, sentiment_counts = results
-        dfanalysis = pd.DataFrame(sentiments, columns=['Review', 'Sentiment Label', 'Sentiment Score'])
+        dfanalysis = pd.DataFrame(sentiments, columns=['Review', 'Sentiment Label', 'Confidence Score'])
         data = dfanalysis.to_dict(orient='records')
         color_map = {
     "Very negative": "#ff3333",  
@@ -470,7 +469,7 @@ def clear_session():
 def handle_selected_rows():
     data = request.get_json()
     merged_rows = data.get('mergedData', [])
-    print(merged_rows)
+    # print(merged_rows)
     language = data.get('language', 'en')
     session['language']=language
     # Get word frequencies
@@ -506,7 +505,7 @@ def handle_selected_rows():
     except Exception as e:
         print("Error in DataFrame or visualization:", e)
     session['scatter_html'] = scatter_text_html
-        
+    
     # Word Tree Generator
     sentences = [[s] for s in merged_rows]
     wordTreeData = sentences
@@ -517,11 +516,16 @@ def handle_selected_rows():
     search_word = cleaned_word
     df = pd.DataFrame(merged_rows, columns=['text'])
     analyser = KWICAnalyser(df,language)
-        # Initialize the KWICAnalyser with the merged rows
+    # Initialize the KWICAnalyser with the merged rows
+    # Adding to session for word cloud to use
+    session["tokens_with_semantic_tags"] = analyser.tokens_with_semantic_tags
     
     # Get the sorted unique list of semantic tags
     sorted_unique_tags = analyser.get_sorted_unique_tags()
     word_frequencies = analyser.get_word_frequencies()
+    unfiltered_word_frequencies = analyser.get_word_frequencies(isUnfiltered=True)
+    session['unfiltered_word_frequencies'] = unfiltered_word_frequencies
+    session['word_frequencies'] = word_frequencies
     session['mergedData'] = merged_rows
     session['sentiment_data'] = sentiment_data
     summary = summarize_text(merged_rows)
@@ -538,6 +542,7 @@ def handle_selected_rows():
         "summary": summary, "sortedUniqueTags": sorted_unique_tags, 
         "scatterTextHtml": scatter_text_html
     })
+    
 @FileAnalysis.route('/get_exampledata_files')
 def get_files():
     directory = '/freetxt/website/static/example-data-hub'
@@ -587,8 +592,7 @@ def generate_wordcloud():
             language = 'en'  # default to English if detection fails
         
         cloud_generator = WordCloudGenerator(input_data)
-
-        wc_path,word_list = cloud_generator.generate_wordcloud( cloud_shape_path, cloud_outline_color, cloud_type, language,cloud_measure,wordlist={})
+        wc_path, word_list = cloud_generator.generate_wordcloud(cloud_shape_path, cloud_outline_color, cloud_type, language,cloud_measure,wordlist={})
         session['word_cloud_src'] = wc_path
        
         return jsonify({
@@ -938,7 +942,6 @@ def get_keyword_data():
     try:
         if 'keyword_results' in session:
             keywordresults = session.get('keyword_results')
-            buffer = StringIO()
             structured_data = [{
             'Left Context': item[0],
             'Keyword': item[1],
@@ -958,9 +961,53 @@ def get_keyword_data():
     except Exception as e:
         # Handle  exception here
         return "Server encountered an error", 500
-
-
-
+    
+@FileAnalysis.route('/get-word-frequencies-data')
+def get_word_frequencies():
+    try:
+        if 'word_frequencies' in session and 'unfiltered_word_frequencies' in session:
+            word_frequencies = session['word_frequencies']
+            unfiltered_word_frequencies = session['unfiltered_word_frequencies']
+            
+            # Sorted by frequency
+            sorted_word_frequencies = {k: v for k, v in sorted(word_frequencies.items(), key=lambda item: (-item[1], item[0]))}
+            sorted_unfiltered_word_frequencies = {k: v for k, v in sorted(unfiltered_word_frequencies.items(), key=lambda item: (-item[1], item[0]))}
+            
+            # The filtered data
+            structured_data = [{
+                'word': key,
+                'frequency': val
+                } for key, val in sorted_word_frequencies.items()]
+            
+            # The unfiltered data
+            unfiltered_structured_data = [{
+                'word': key,
+                'frequency': val
+                } for key, val in sorted_unfiltered_word_frequencies.items()]
+            
+            filtered_data = pd.DataFrame(structured_data)
+            unfiltered_data = pd.DataFrame(unfiltered_structured_data)
+            
+            # Create headings and gaps
+            unfiltered_heading = pd.DataFrame([["Unfiltered Data", ""]], columns=["word", "frequency"])
+            gap = pd.DataFrame([["", ""]], columns=["word", "frequency"])
+            
+            merged_frequency_data = pd.concat([filtered_data, gap, unfiltered_heading, unfiltered_data]).reset_index(drop=True)
+            
+            buffer = BytesIO()
+            merged_frequency_data.to_csv(buffer, index=False, encoding='utf-8')
+            buffer.seek(0)
+            
+            return Response(
+                buffer.getvalue(),
+                headers={
+                 "Content-Disposition": "attachment; filename=keywordData.csv",
+                "Content-type": "text/csv"
+                }
+            )
+    except Exception as e:
+        return "Server encountered an error", 500
+            
 # Function to retain word clusters or individual words
 def retain_clusters(text, clusters):
     words = text.split()
@@ -993,7 +1040,7 @@ def regenerate_wordcloud():
         # Clean each review in the DataFrame
         input_data[input_data.columns[0]] = input_data[input_data.columns[0]].apply(clean_review)
        
-          # Detect the language using the langdetect package
+        # Detect the language using the langdetect package
         combined_text = ' '.join(input_data[0].astype(str))
         try:
             language = detect(combined_text)
@@ -1001,8 +1048,10 @@ def regenerate_wordcloud():
             language = 'en'  # default to English if detection fails
         
         cloud_generator = WordCloudGenerator(input_data)
-        wc_path,word_list = cloud_generator.generate_wordcloud( cloud_shape_path, cloud_outline_color, cloud_type, language,cloud_measure,wordlist=provided_words)
+        wc_path, word_list = cloud_generator.generate_wordcloud(cloud_shape_path, cloud_outline_color, cloud_type, language ,cloud_measure, provided_words)
+       
         session['word_cloud_src'] = wc_path
+
         return jsonify({
             "status": "success",
             "wordcloud_image_path": wc_path,
