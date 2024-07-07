@@ -1,4 +1,5 @@
 flask==2.2.2
+Flask-Cors
 Flask-Session
 flask_restful
 gensim
@@ -19,12 +20,15 @@ regex
 reportlab
 requests
 scattertext>=0.0.2.92
+scipy==1.12.0
 seaborn
 spacy>=3.2.4
 summa
 torch
 transformers
 wordcloud
+werkzeug==2.3.3
+weasyprint
 graphviz
 kaleido
 empath
