@@ -1783,36 +1783,20 @@
             <span id="windowSizeValue">5</span>
           </div>
 
-          <!-- KWIC Table -->
-          <div id="kwicResults">
-            <table id="kwicTable" class="hidden">
-              <thead>
-                <tr>
-                  <th
-                    data-lang-en="Left Context"
-                    data-lang-cy="Cyd-destun chwith"
-                  >
-                    Left Context
-                  </th>
-                  <th data-lang-en="Keyword" data-lang-cy="Allweddair">
-                    Keyword
-                  </th>
-                  <th data-lang-en="Right Context" data-lang-cy="Cyd-destun de">
-                    Right Context
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                <!-- Filled by JavaScript -->
-              </tbody>
-            </table>
-          </div>
-          <a href="/get-keyword-data" download>
+          <!-- Sub-category Dropdown -->
+          <label
+            class="form-label"
+            data-lang-en="Select Option"
+            data-lang-cy="Dewiswch Opsiwn"
+            >Select Option</label
+          >
+          <select id="subCategoryDropdown" class="form-control"></select>
+          <a href="/get-word-frequencies-data" download>
             <button
               type="button"
               class="analyze-btn hidden"
               data-lang-en="Download Word Frequency Results"
-              data-lang-cy="Needs welsh translation"
+              data-lang-cy="Llwytho canlyniadau amlder geiriau i lawr"
             >
               Download Word Frequency Results
             </button>
@@ -1936,7 +1920,7 @@
           class="custom-control-label"
           for="puncSwitch"
           data-lang-en="Show punctuation menu"
-          data-lang-cy="Needs welsh translation"
+          data-lang-cy="Dangos y ddewislen atalnodi"
           >Show punctuation menu</label
         >
       </div>
@@ -1974,7 +1958,7 @@
                 class="ml-1"
                 style="font-weight: bold"
                 data-lang-en="Included"
-                data-lang-cy="Needs welsh translation"
+                data-lang-cy="Wedi&rsquo;i gynnwys"
               >
                 Included
               </p>
@@ -1985,7 +1969,7 @@
                 class="ml-1"
                 style="font-weight: bold"
                 data-lang-en="Excluded"
-                data-lang-cy="Needs welsh translation"
+                data-lang-cy="Wedi&rsquo;i hepgor"
               >
                 Excluded
               </p>
@@ -2009,10 +1993,9 @@
       >
         The word frequency is represented by the weight in the tool tip
       </h5>
-      <!-- Needs Welsh translation -->
       <h5
         data-lang-en="You can include or exclude specific punctuation from the word tree"
-        data-lang-cy="Needs welsh translation"
+        data-lang-cy="Gallwch gynnwys neu hepgor atalnodi penodol o&rsquo;r goeden eiriau"
       >
         You can include or exclude specific punctuation from the word tree
       </h5>
