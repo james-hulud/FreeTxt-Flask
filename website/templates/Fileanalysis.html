@@ -2891,170 +2891,67 @@
                   </select>
                 </div>
 
-                <div class="form-group col-md-4">
-                  <label
-                    class="form-label"
-                    data-lang-en="Select cloud measurement:"
-                    data-lang-cy="Dewiswch fesuriad y cwmwl:"
-                    >Select cloud measurement:</label
-                  >
-                  <select
-                    name="cloud_measure"
-                    class="form-control"
-                    title="Changing this will regenerate the word cloud"
-                  >
-                    <option
-                      value="KENESS"
-                      data-lang-en="Keyness"
-                      data-lang-cy="Allweddeirwydd"
-                    >
-                      Keyness
-                    </option>
-                    <option
-                      value="Frequency"
-                      data-lang-en="Frequency"
-                      data-lang-cy="Amlder"
-                    >
-                      Frequency
-                    </option>
-                    <option
-                      value="Log-Likelihood"
-                      data-lang-en="Log-Likelihood"
-                      data-lang-cy="Tebygolrwydd-Log"
-                    >
-                      Log-Likelihood
-                    </option>
-                  </select>
-                </div>
-              </div>
-              <div
-                style="
-                  display: flex;
-                  align-items: center;
-                  justify-content: center;
-                  height: 170vh;
-                "
+            <div class="form-group col-md-4">
+              <label
+                class="form-label"
+                data-lang-en="Select cloud measurement:"
+                data-lang-cy="Dewiswch fesuriad y cwmwl:"
+                >Select cloud measurement:</label
               >
-                <img id="wordCloudImage" src="" alt="Word Cloud Image" />
-              </div>
-            </form>
-            <a href="/get-word-cloud" download>
-              <button
-                class="analyze-btn"
-                data-lang-en="Download Word Cloud image"
-                data-lang-cy="Lawrlwytho delwedd Cwmwl Geiriau"
+              <select
+                name="cloud_measure"
+                class="form-control"
+                title="Changing this will regenerate the word cloud"
               >
-                Download Word Cloud image
-              </button>
-            </a>
-            <h2 data-lang-en="Word List" data-lang-cy="Rhestr Geiriau">
-              Word List
-            </h2>
+                <option
+                  value="KENESS"
+                  data-lang-en="Keyness"
+                  data-lang-cy="Allweddeirwydd"
+                >
+                  Keyness
+                </option>
+                <option
+                  value="Frequency"
+                  data-lang-en="Frequency"
+                  data-lang-cy="Amlder"
+                >
+                  Frequency
+                </option>
+                <option
+                  value="Log-Likelihood"
+                  data-lang-en="Log-Likelihood"
+                  data-lang-cy="Tebygolrwydd-Log"
+                >
+                  Log-Likelihood
+                </option>
+              </select>
+            </div>
           </div>
-          <div id="wordListContainer" class="word-checkbox-list"></div>
-
-          <!--class="form-group col-md-4"-->
-          =======
           <div
-            class="color-box orange"
-            data-lang-en="Orange:  (Positive and Negative)"
-            data-lang-cy="Oren: (Cadarnhaol a Negyddol)"
+            style="
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              height: 170vh;
+            "
           >
-            Orange: (Positive and Negative) >>>>>>> 738e2ac (committing changes)
+            <img id="wordCloudImage" src="" alt="Word Cloud Image" />
           </div>
-        </div>
-        <p
-          data-lang-en="Towards the top-right, the most frequently shared terms between the two sentiments are found, while the bottom-left has the least frequent shared terms."
-          data-lang-cy="Tua'r dde uchaf, gellir dod o hyd i'r termau sy'n cael eu rhannu fwyaf aml rhwng y ddau sentiment, ac ar y chwith isaf ceir y termau sy'n cael eu rhannu leiaf aml."
-        >
-          Towards the top-right, the most frequently shared terms between the
-          two sentiments are found, while the bottom-left has the least frequent
-          shared terms.
-        </p>
-
-        <h3 data-lang-en="Score Range:" data-lang-cy="Ystod Sgôr:">
-          Score Range:
-        </h3>
-        <p
-          data-lang-en="The range is between -1 and 1, with scores near 0 representing words with similar frequencies in both classes (yellow and orange dots). Scores near 1 are for words more frequent in positive contexts (blue), and scores near -1 for negative contexts (red). Darker shades of blue or red indicate scores closer to their respective extremes."
-          data-lang-cy="Mae'r ystod rhwng -1 ac 1, gyda sgorau yn agos at 0 yn cynrychioli geiriau gydag amlderau tebyg yn y ddau ddosbarth (dotiau melyn ac oren). Mae sgorau sy'n agos i 1 ar gyfer geiriau sy'n fwy aml mewn cyd-destunau cadarnhaol (glas), a sgorau sy'n agos i -1 ar gyfer cyd-detunau negyddol (coch). Mae arlliwiau mwy tywyll o las neu goch yn nodi sgorau sy'n fwy agos at eu heithafion priodol."
-        >
-          The range is between -1 and 1, with scores near 0 representing words
-          with similar frequencies in both classes (yellow and orange dots).
-          Scores near 1 are for words more frequent in positive contexts (blue),
-          and scores near -1 for negative contexts (red). Darker shades of blue
-          or red indicate scores closer to their respective extremes.
-        </p>
-
-        <h3
-          data-lang-en="Interactive Features:"
-          data-lang-cy="Nodweddion Rhyngweithiol:"
-        >
-          Interactive Features:
-        </h3>
-        <p
-          data-lang-en="Hovering over the dots on the plot reveals word frequency statistics per 25,000 words for both classes and a Scaled F-Score. This frequency determines each point's plot position. For instance, a given metric might be 195:71 per 25k words. Using the query box or clicking on a dot provides more details, like the frequency per 1,000 Reddit posts ('doc')."
-          data-lang-cy="Mae hofran uwchben y dotiau ar y plot yn dangos ystadegau amlder geiriau fesul 25,000 gair ar gyfer dosbarthiadau a Sgôr-F Graddfa. Mae'r amlder yma yn pennu safle pob pwynt ar y plot. Er enghraifft, gellid bwrw metrig 195:71 fesul 25 mil o eiriau. Bydd defnyddio'r blwch ymholiadau neu glicio ar ddot yn rhoi mwy o fanylion, fel yr amlder fesul 1,000 post Reddir ('doc')."
-        >
-          Hovering over the dots on the plot reveals word frequency statistics
-          per 25,000 words for both classes and a Scaled F-Score. This frequency
-          determines each point's plot position. For instance, a given metric
-          might be 195:71 per 25k words. Using the query box or clicking on a
-          dot provides more details, like the frequency per 1,000 Reddit posts
-          ('doc').
-        </p>
-
-        <iframe
-          id="scattertextIframe"
-          src=""
-          width="100%"
-          height="1000"
-          frameborder="0"
-          style="overflow: visible"
-        ></iframe>
-        <a href="/get-html-scatter" download>
+        </form>
+        <a href="/get-word-cloud" download>
           <button
             class="analyze-btn"
-            data-lang-en="Download Interactive Scatter Text"
-            data-lang-cy="Lawrlwytho Testun Gwasgariad Rhyngweithiol"
+            data-lang-en="Download Word Cloud image"
+            data-lang-cy="Lawrlwytho delwedd Cwmwl Geiriau"
           >
-            Download Interactive Scatter Text
+            Download Word Cloud image
           </button>
         </a>
       </div>
-      <div id="tab2" class="tab-content">
-        <form id="summarize-form">
-          <h5
-            data-lang-en="This tool, adapted from the Welsh Summarisation project, produces a basic extractive summary of the review text from the selected columns."
-            data-lang-cy="Mae'r offeryn hwn a gafodd ei addasu o Brosiect Crynhoi Testunau Cymraeg yn creu crynodeb echdynnol sylfaenol o destun yr adolygiad o'r colofnau a ddewiswyd."
-          >
-            This tool, adapted from the Welsh Summarisation project, produces a
-            basic extractive summary of the review text from the selected
-            columns.
-          </h5>
-
-          <input
-            type="range"
-            id="chosen_ratio"
-            name="chosen_ratio"
-            min="10"
-            max="50"
-            step="10"
-            value="40"
-            oninput="onSliderChange()"
-          />
-          <span id="ratio-value">40%</span><br />
-          <div id="summary"></div>
-          <button
-            class="analyze-btn"
-            type="button"
-            onclick="downloadSummary()"
-            data-lang-en="Download Summary"
-            data-lang-cy="lawrlwytho crynodeb"
-          >
-            Download Summary
-          </button>
-        </form>
+      <div class="my-5">
+        <h2 data-lang-en="Word List" data-lang-cy="Rhestr Geiriau">
+          Word List
+        </h2>
       </div>
       <div
         id="wordListOuterContainer"
