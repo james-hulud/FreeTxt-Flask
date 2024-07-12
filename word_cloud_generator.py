@@ -235,7 +235,7 @@ class WordCloudGenerator:
 
     # Scale up to a suitable range for word cloud
        return exponential_scale * 100
-    def get_wordcloud(self, dataframe,metric,word_list, cloud_shape_path, cloud_outline_color,cloud_type):
+    def get_wordcloud(self, dataframe, metric, word_list, cloud_shape_path, cloud_outline_color, cloud_type, unique_id=None):
         MAX_WIDTH = 2000
         MAX_HEIGHT = 2000
         MIN_FONT_SIZE=10
@@ -324,7 +324,7 @@ class WordCloudGenerator:
         cleanup_old_graphs("/freetxt/website/static/wordcloud")
         # Generate a unique image name using the current timestamp
         timestamp = int(time.time())
-        wc_image_path = os.path.join("/freetxt/website/static/wordcloud", f"wordcloud_{timestamp}.png")
+        wc_image_path = os.path.join("website/static/wordcloud", f"wordcloud_{timestamp}.png")
     
         wordcloud.to_file(wc_image_path)
 
@@ -475,11 +475,11 @@ class WordCloudGenerator:
         else:
             return None, None
 
-        return all_words, merged_df    
+        return all_words, merged_df
 
 
 
-    def generate_wordcloud(self, cloud_shape_path, cloud_outline_color, cloud_type, language,cloud_measure, wordlist={}):
+    def generate_wordcloud(self, cloud_shape_path, cloud_outline_color, cloud_type, language, cloud_measure, wordlist={}, unique_id=None):
         
-        words_for_cloud, df = self.generate_wordcloud_type(self.tokens_with_semantic_tags, cloud_type, language, cloud_measure,wordlist)
-        return self.get_wordcloud(df,cloud_measure,words_for_cloud, cloud_shape_path, cloud_outline_color,  cloud_type)
+        words_for_cloud, df = self.generate_wordcloud_type(self.tokens_with_semantic_tags, cloud_type, language, cloud_measure, wordlist)
+        return self.get_wordcloud(df, cloud_measure, words_for_cloud, cloud_shape_path, cloud_outline_color, cloud_type, unique_id)
