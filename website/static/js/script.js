@@ -3681,6 +3681,7 @@ function downloadWordTreeAsImage() {
   });
 }
 
+// Handles the visibility of hamburger menu
 document.addEventListener("DOMContentLoaded", function () {
   var menu = document.querySelector(".primary-menu");
   var toggle = document.querySelector(".menu-toggle");
@@ -3691,6 +3692,12 @@ document.addEventListener("DOMContentLoaded", function () {
     } else {
       menu.style.display = "block";
     }
+  });
+
+  // Handles navbar visibility if screen size changes
+  const mql = window.matchMedia("screen and (max-width: 600px)");
+  mql.addEventListener("change", (mq) => {
+    menu.style.display = mq.matches ? "none" : "flex";
   });
 });
 
