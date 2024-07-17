@@ -2025,9 +2025,13 @@ function generateWordClouds() {
   const wordListOuterContainer = document.getElementById(
     "wordListOuterContainer"
   );
+  const wordTagAssociationsContainer = document.getElementById(
+    "tag-words-associations-container"
+  );
 
   loadingElement.style.display = "flex";
   wordListOuterContainer.style.setProperty("display", "none", "important");
+  wordTagAssociationsContainer.style.display = "none";
 
   const downloadWordCloudBtn = document.getElementById("word-cloud-download-1");
   const downloadSecWordCloudBtn = document.getElementById(
@@ -2108,6 +2112,8 @@ function generateWordClouds() {
 
           // Make second word cloud download button visible
           downloadSecWordCloudBtn.style.display = "block";
+          // Make word list visible
+          wordTagAssociationsContainer.style.display = "";
         }
 
         renderWordCheckboxes(data.word_list[0]);
@@ -2171,26 +2177,35 @@ function renderTagWordsAssociatons(tagWordsArray) {
   const listContainer = document.getElementById("tag-words-associations-list");
   // Reset list
   listContainer.innerHTML = "";
+
   for (let [tag, wordArray] of Object.entries(tagWordsArray)) {
     tagWordsContainer = document.createElement("div");
-    tagWordsContainer.classList.add("container-fluid", "d-flex", "flex-column");
+    tagWordsContainer.classList.add(
+      "container-fluid",
+      "d-flex",
+      "flex-column",
+      "mb-4"
+    );
 
-    const tagContainer = document.createElement("h3");
+    const tagContainer = document.createElement("h1");
     tagContainer.id = `tag-${tag}`;
     tagContainer.classList.add(
       "d-flex",
       "justify-content-center",
       "align-items-center",
-      "text-break"
+      "text-break",
+      "mt-0"
     );
+    tagContainer.style.fontWeight = "bold";
     tagContainer.appendChild(document.createTextNode(tag));
 
     const wordListContainer = document.createElement("div");
     wordListContainer.classList.add(
       "container-fluid",
+      "m-0",
       "row",
       "row-cols-1",
-      "row-cols-md-auto"
+      "row-cols-sm-2"
     );
 
     wordArray.forEach((word) => {
@@ -2209,6 +2224,19 @@ function renderTagWordsAssociatons(tagWordsArray) {
     tagWordsContainer.appendChild(tagContainer);
     tagWordsContainer.appendChild(wordListContainer);
     listContainer.appendChild(tagWordsContainer);
+  }
+}
+
+function handleWordTagListVis(event) {
+  const listContainer = document.getElementById("tag-words-associations-list");
+  const iconContainer = document.getElementById("word-tag-list-icon");
+
+  if (event.target.checked) {
+    listContainer.style.display = "none";
+    iconContainer.classList.replace("fa-eye-slash", "fa-eye");
+  } else {
+    listContainer.style.display = "flex";
+    iconContainer.classList.replace("fa-eye", "fa-eye-slash");
   }
 }
 
