@@ -1836,6 +1836,28 @@
               Download Unfiltered Word Frequency Results
             </button>
           </a>
+        </div>
+        <div id="window-size-range-container" class="my-5" style="display: none">
+          <label
+            for="windowSizeRange"
+            data-lang-en="Window Size:"
+            data-lang-cy="Maint y Ffenestr:"
+            >Window Size:
+          </label>
+          <input
+            type="range"
+            id="windowSizeRange"
+            name="window_size"
+            min="1"
+            max="10"
+            value="5"
+          />
+          <span id="windowSizeValue">5</span>
+        </div>
+
+        <!-- KWIC Table -->
+        <div id="kwicResults">
+          <table id="kwicTable" class="hidden">
           <!-- Collocations Table -->
           <table id="collocsTable" class="hidden">
             <thead>
