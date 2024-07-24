@@ -1691,7 +1691,10 @@ function resetColumnSelection() {
   // Reset visibility of other inner elements
   document.getElementById("columns-container").classList.add("hidden");
 }
+
+// Global variables
 let wordFrequencies = {};
+let unfilteredWordFrequencies = {};
 let semantictags = {};
 let isWordTreeClicked;
 
@@ -1832,7 +1835,11 @@ function sendSelectedRows() {
         handleWordTreeData(data.wordTreeData, data.search_word);
         document.getElementById("search_word").value = data.search_word;
         populateDropdown(data.wordFrequencies);
+
+        // Stores word frequency data
         wordFrequencies = data.wordFrequencies;
+        unfilteredWordFrequencies = data.unfilteredWordFrequencies;
+
         semantictags = data.sortedUniqueTags;
         document.getElementById("tab-buttons").classList.remove("hidden"); // Show the tab buttons
         document.getElementById("tabs").classList.remove("hidden"); // Show the tabs content
@@ -2657,6 +2664,13 @@ function fetchResults() {
   postData.window_size = windowSize;
 
   $.post("/Keyword_collocation", postData, displayResults);
+}
+
+// Function for use unfiltered data checkbox
+function handleWordFreqDatasetChange(event) {
+  event.target.checked
+    ? populateDropdown(unfilteredWordFrequencies)
+    : populateDropdown(wordFrequencies);
 }
 
 // Attach the event handler for dropdown change
@@ -3576,7 +3590,9 @@ async function handleCategoryChange() {
   }
 
   if (document.getElementById("wordRadio").checked) {
-    populateDropdown(wordFrequencies);
+    $("#word-freq-include-all-check").is(":checked")
+      ? populateDropdown(unfilteredWordFrequencies)
+      : populateDropdown(wordFrequencies);
   } else if (document.getElementById("posTagRadio").checked) {
     const posTags = [
       { value: "NOUN", en: "Nouns", cy: "Enwau" },
