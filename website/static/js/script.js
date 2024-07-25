@@ -1405,6 +1405,7 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 function startAnalysisfile_uploaded(event) {
+  console.log("file uploaded");
   event.preventDefault(); // To prevent the form from submitting in the traditional way
   validateForm(event, "upload");
   const formData = new FormData(document.getElementById("text-analysis-form"));
@@ -1415,6 +1416,11 @@ function startAnalysisfile_uploaded(event) {
   })
     .then((response) => response.json())
     .then((data) => {
+      if (data.status === "error") {
+        alert(data.message);
+        return;
+      }
+
       if (data.columns) {
         populateColumns(data.columns);
       }
@@ -1699,6 +1705,8 @@ let semantictags = {};
 let isWordTreeClicked;
 
 function sendSelectedRows() {
+  console.log("sendSelectedRows called");
+
   // Fetch the container holding the column labels
   const container = document.getElementById("columnLabelsContainer");
 
@@ -1826,6 +1834,9 @@ function sendSelectedRows() {
         loadingElement.style.display = "none";
         // Handle the response data
         //displayWordFrequencies(data);
+
+        console.log("response received successfully");
+
         displayOverallSentiment(data.sentimentCounts);
         displaySentimentTable(data.sentimentData);
         displayPlot(data.sentimentPlotPie, "SentimentPlotViewPie");
@@ -1846,7 +1857,9 @@ function sendSelectedRows() {
         showTab(0); // Automatically switch to the analysis tab
 
         const summaryElement = document.getElementById("summary");
-        summaryElement.textContent = data.summary;
+        summaryElement.textContent = data.summary
+          ? data.summary
+          : "Could not generate summary.";
 
         const iframeElem = document.getElementById("scattertextIframe");
         sendWordCloudRequest();
@@ -1947,6 +1960,8 @@ let selectedCloudtext = "";
 let cloudmeasuretxt = "";
 
 function sendWordCloudRequest() {
+  console.log("Generating initial word cloud");
+
   const downloadWordCloudBtn = document.getElementById("word-cloud-download-1");
   downloadWordCloudBtn.style.display = "none";
 
