@@ -250,12 +250,12 @@ def fileanalysis():
                 
                 file_length = os.stat(filepath).st_size
                 
-                print()
-                print()
-                print("FILE LENGTH")
-                print(file_length)
-                print()
-                print()
+                #! FILE SIZE LIMIT, CURRENTLY 1MB
+                if file_length > 1000000:
+                    return jsonify({
+                        "status": "error",
+                        "message": "Uploaded file size is too large. Please upload files less than 1MB."
+                        })
                 
                 session['uploaded_file_path'] = filepath  # save the new file path to session
                 session['uploaded_file_name'] = filename 
@@ -479,6 +479,10 @@ def clear_session():
 
 @FileAnalysis.route('/process_rows', methods=['GET', 'POST'])
 def handle_selected_rows():
+    
+    # debugging
+    print("process rows request made")
+    
     data = request.get_json()
     merged_rows = data.get('mergedData', [])
     # print(merged_rows)
@@ -499,6 +503,7 @@ def handle_selected_rows():
     # Choose a random word from the list as the search word
     scatter_text_html = None
     sentiment_analyser = SentimentAnalyser()
+    
     # Get sentiment analysis results
     try:
         sentiment_data, sentiment_counts, pie_chart_html, bar_chart_html = sentiment_analysis(merged_rows, language)
@@ -518,6 +523,7 @@ def handle_selected_rows():
         print("Error in DataFrame or visualization:", e)
     session['scatter_html'] = scatter_text_html
     
+    print("Creating word tree")
     # Word Tree Generator
     sentences = [[s] for s in merged_rows]
     wordTreeData = sentences
@@ -533,11 +539,14 @@ def handle_selected_rows():
     # Get the sorted unique list of semantic tags
     sorted_unique_tags = analyser.get_sorted_unique_tags()
     word_frequencies = analyser.get_word_frequencies()
+    
     unfiltered_word_frequencies = analyser.get_word_frequencies(isUnfiltered=True)
     session['unfiltered_word_frequencies'] = unfiltered_word_frequencies
     session['word_frequencies'] = word_frequencies
     session['mergedData'] = merged_rows
     session['sentiment_data'] = sentiment_data
+    
+    print("Creating summary")
     summary = summarize_text(merged_rows)
 
     return jsonify({
@@ -573,6 +582,7 @@ def clean_review(review):
 @FileAnalysis.route('/generate_wordcloud', methods=['POST','GET'])
 def generate_wordcloud():
     if request.method == 'POST':
+        
         request_data = request.get_json(force=True)
         #print(request.headers.get('Content-Type'))
       
@@ -606,6 +616,9 @@ def generate_wordcloud():
         cloud_generator = WordCloudGenerator(input_data)
         wc_path, word_list = cloud_generator.generate_wordcloud(cloud_shape_path, cloud_outline_color, cloud_type, language, cloud_measure, wordlist={})
         
+        # Cleans word list in case of values that can cause errors
+        word_list = [x for x in word_list if str(x).lower() != 'nan']
+        
         session['word_cloud_src'] = wc_path
         
         json_data = {
@@ -620,7 +633,10 @@ def generate_wordcloud():
             words_with_sem_tags = [word for (word, pos, tag) in words_tags if tag in word_list]
             sec_wc_path, sec_word_list = cloud_generator.generate_wordcloud(cloud_shape_path, cloud_outline_color, 'all_words', language, cloud_measure, words_with_sem_tags, f"{time.time()}_words")
             
-            tag_words_associations = {tag: list({word for (word, pos, tag_entry) in words_tags if tag == tag_entry}) for (word, pos, tag) in words_tags if tag in word_list}
+            # Cleans word list in case of values that can cause errors
+            sec_word_list = [x for x in sec_word_list if str(x).lower() != 'nan']
+            
+            tag_words_associations = {tag: list({str(word) for (word, pos, tag_entry) in words_tags if tag == tag_entry}) for (word, pos, tag) in words_tags if tag in word_list}
             
             session['sec_word_cloud_src'] = sec_wc_path
             
@@ -630,6 +646,9 @@ def generate_wordcloud():
                 "word_list": [word_list, sec_word_list],
                 "tag_words_associations": tag_words_associations
                 }
+
+        # with open("output.txt", "w") as f:
+        #     json.dump(json_data, f, indent=4)
             
         return jsonify(json_data)
     
