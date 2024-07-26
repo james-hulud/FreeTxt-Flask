@@ -38,6 +38,7 @@ html2image
 apscheduler
 Werkzeug==2.3.7
 flask_sqlalchemy
+humanize
 flask_cors
 weasyprint
 cy-dual-basiccorcencc2usas-contextual @ https://github.com/UCREL/pymusas-models/releases/download/cy_dual_basiccorcencc2usas_contextual-0.3.0/cy_dual_basiccorcencc2usas_contextual-0.3.0-py3-none-any.whl
