@@ -181,12 +181,27 @@ def fileanalysis():
             #print(sentences)
         elif input_method == 'example':
             example_file = request.form.get('example-data')
+            
+            print()
+            print()
+            print("example file")
+            print(example_file)
+            print()
+            print()
+            
             if not example_file:
             # Handle the error - maybe raise an exception or return an error response.
+                current_app.logger.error("The example_file is not provided or is None")
                 raise ValueError("The example_file is not provided or is None")
 
             file_path = os.path.join('/freetxt/website/static/example-data-hub', example_file)
             file_extension = os.path.splitext(file_path)[1].lower()  # Extract the file extension
+            
+            print()
+            print()
+            print("file path and ext")
+            print(file_path)
+            print(file_extension)
 
             # Differentiate the behavior based on the file extension
             if file_extension == '.txt':
@@ -552,6 +567,8 @@ def handle_selected_rows():
     
     print("Creating summary")
     summary = summarize_text(merged_rows)
+    
+    current_app.logger.info("/process_rows completed")
 
     return jsonify({
         "status": "success",
@@ -661,6 +678,7 @@ def generate_wordcloud():
 
 @FileAnalysis.route('/Keyword_collocation', methods=['POST'])
 def analyse():
+    #! Look here for file path
     try:
         window_size = request.form.get('window_size', 5, type=int)
         selected_word = request.form.get('word_selection')
