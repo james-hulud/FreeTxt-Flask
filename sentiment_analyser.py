@@ -186,7 +186,6 @@ class SentimentAnalyser:
         for row in rows:
             sentiment_result = sentiment_classifier.predict(
                 text=row,
-                print_result=True,
                 ignore_error=True,
                 eval_batch_size=32,
             )
