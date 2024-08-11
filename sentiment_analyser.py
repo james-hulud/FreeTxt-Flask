@@ -183,7 +183,7 @@ class SentimentAnalyser:
         rows = self.find_aspects(
             rows, aspects) if rows else []
 
-        if (len(rows) == 0):
+        if len(rows) < 1:
             return Exception("Error, no data to analyse")
 
         results = []
