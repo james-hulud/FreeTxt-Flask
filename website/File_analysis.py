@@ -541,21 +541,23 @@ def handle_selected_rows():
     sentences = [[s] for s in merged_rows]
     wordTreeData = sentences
     random_word = random.choice(list(sorted_word_frequencies.keys()))
-  
-    cleaned_word = random_word.translate(str.maketrans('', '', string.punctuation))
+    search_word = random_word
+    # Initialize the KWICAnalyser with the merged rows
 
-    search_word = cleaned_word
-    df = pd.DataFrame(merged_rows, columns=['text'])
-    analyser = KWICAnalyser(df,language)
-        # Initialize the KWICAnalyser with the merged rows
-    
-    # Get the sorted unique list of semantic tags
+    # ucrel api used
+    analyser = KWICAnalyser(' '.join(merged_rows), language='en')
+    # Adding to session for word cloud to use
+    session["tokens_with_semantic_tags"] = analyser.tokens_with_semantic_tags
+
+    # ucrel api used
     sorted_unique_tags = analyser.get_sorted_unique_tags()
     word_frequencies = analyser.get_word_frequencies()
-    
-    unfiltered_word_frequencies = analyser.get_word_frequencies(isUnfiltered=True)
+
+    unfiltered_word_frequencies = analyser.get_word_frequencies(
+        isUnfiltered=True)
     session['unfiltered_word_frequencies'] = unfiltered_word_frequencies
     session['word_frequencies'] = word_frequencies
+
     session['mergedData'] = merged_rows
     session['sentiment_data'] = sentiment_data
     
@@ -567,7 +569,7 @@ def handle_selected_rows():
     return jsonify({
         "status": "success",
         "wordFrequencies": word_frequencies,
-        "unfilteredWordFrequencies" : unfiltered_word_frequencies,
+        "unfilteredWordFrequencies": unfiltered_word_frequencies,
         "sentimentData": sentiment_data,
         "sentimentCounts": sentiment_counts,
         'sentimentPlotPie': pie_chart_html,
@@ -575,7 +577,7 @@ def handle_selected_rows():
         "wordTreeData": wordTreeData,
         "search_word": search_word,
         "summary": summary,
-        "sortedUniqueTags": sorted_unique_tags, 
+        "sortedUniqueTags": sorted_unique_tags,
         "scatterTextHtml": scatter_text_html
     })
     
@@ -1228,6 +1230,7 @@ def aspect_based_sentiment_analysis():
     data = request.get_json()
     rows_data = data.get("rows", [])
     aspects_data = data.get("aspects", [])
+    global_sentiments_data = data.get("includeGlobalSentiments", False)
     language = data.get("language", "en")
 
     analyser = SentimentAnalyser()
@@ -1243,8 +1246,18 @@ def aspect_based_sentiment_analysis():
         if len(aspects_data) > 10:
             return jsonify({"status": "error", "message": f"Too many aspects provided. You can include a maximum of 10 aspects. Current count: {len(aspects_data)}."}), 400
 
+        char_count = 0
+        for aspect in aspects_data:
+            char_count += len(aspect)
+
+        if char_count > 500:
+            return jsonify({"status": "error", "message": f"Too many characters provided. Your total aspect input must be less than 500 characters. Current count: {char_count}."}), 400
+
         results = analyser.analyse_aspects_sentiment(
-            rows=rows_data, aspects=aspects_data)
+            rows=rows_data, aspects=aspects_data, includeGlobalSentiments=global_sentiments_data)
+
+        if isinstance(results, Exception):
+            return jsonify({"status": "error", "message": f"No data to analyse for entered aspect(s).\n\nAspects: {*aspects_data,}"}), 400
 
     except Exception as e:
         current_app.logger.exception(f"Error: {e}")
