@@ -152,7 +152,7 @@ def read_file(file_path):
         data = pd.DataFrame()
 
     data.columns = [sanitize_column_name(col) for col in data.columns]
-    data = convert_date_columns(data,date_formats)
+    data = convert_date_columns(data)
     return data
   # remove the filepath from the session
 
@@ -246,6 +246,7 @@ def fileanalysis():
             return jsonify({"columns": list(data.columns)})
 
         elif input_method == 'upload':
+            print("UPLOADED!!")
             #! Limit allowed file size
             # Before saving the new file path, let's clean up any previously uploaded file
             previous_file_path = session.get('uploaded_file_path')
@@ -397,8 +398,10 @@ def sentiment_analysis(sentences, language, sentiment_classes=3):
         elif language == 'cy':
              visualisation_text = visualisation_text_cy
         # Generating the pie chart
+        
+        visualisation_text = "Visualisation by" if language == "en" else "Delweddu gan"
+        
         if language == 'en':
-
             fig = px.pie(values=sentiment_counts.values(), names=sentiment_counts.keys(),
                          title='Sentiment Distribution', color=sentiment_counts.keys(),
                          color_discrete_map=color_map)
@@ -519,7 +522,6 @@ def clear_session():
 
 @FileAnalysis.route('/process_rows', methods=['GET', 'POST'])
 def handle_selected_rows():
-
     data = request.get_json()
     merged_rows = data.get('mergedData', [])
     # print(merged_rows)
@@ -587,6 +589,7 @@ def handle_selected_rows():
     session['word_frequencies'] = word_frequencies
 
     session['mergedData'] = merged_rows
+
     session['sentiment_data'] = sentiment_data
 
     summary = summarize_text(merged_rows)
@@ -928,7 +931,7 @@ def get_html_scatter():
         filename_with_logo = f"{base}_logo{ext}"
 
         # Sending the file from the directory
-        return send_from_directory(directory='static/wordcloud', path=filename_with_logo, as_attachment=True)
+        return send_from_directory(directory='static/wordcloud', path=filename, as_attachment=True)
     else:
         # Handle the case where 'scatter_html' is not in session
         return "Scatter HTML not found in session", 404
@@ -1284,7 +1287,6 @@ def aspect_based_sentiment_analysis():
     data = request.get_json()
     rows_data = data.get("rows", [])
     aspects_data = data.get("aspects", [])
-    global_sentiments_data = data.get("includeGlobalSentiments", False)
     language = data.get("language", "en")
 
     analyser = SentimentAnalyser()
@@ -1308,7 +1310,7 @@ def aspect_based_sentiment_analysis():
             return jsonify({"status": "error", "message": f"Too many characters provided. Your total aspect input must be less than 500 characters. Current count: {char_count}."}), 400
 
         results = analyser.analyse_aspects_sentiment(
-            rows=rows_data, aspects=aspects_data, includeGlobalSentiments=global_sentiments_data)
+            rows=rows_data, aspects=aspects_data)
 
         if isinstance(results, Exception):
             return jsonify({"status": "error", "message": f"No data to analyse for entered aspect(s).\n\nAspects: {*aspects_data,}"}), 400
@@ -1375,9 +1377,11 @@ def aspect_based_sentiment_analysis():
             content = f.read()
 
             # Add the "Visualisation by" text and logo image at the bottom
-            addition = """
+            visualisation_text = "Visualisation by" if language == "en" else "Delweddu gan"
+            
+            addition = f"""
         <div style="text-align:center; margin-top:30px;">
-            Visualisation by <img src="https://ucrel-freetxt-2.lancs.ac.uk/static/images/logo.png" alt="Logo" style="height:40px;">
+            {visualisation_text} <img src="https://ucrel-freetxt-2.lancs.ac.uk/static/images/logo.png" alt="Logo" style="height:40px;">
         </div>
         """
 

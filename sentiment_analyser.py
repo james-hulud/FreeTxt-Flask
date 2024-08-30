@@ -143,14 +143,13 @@ class SentimentAnalyser:
                 sentiment_counts[sentiment_label] += 1
         return sentiments, sentiment_counts
 
-    def find_aspects(self, rows, aspects, includeGlobalSentiments=False):
+    def find_aspects(self, rows, aspects):
         """
         Searches text and finds aspects, ready for analysis.
 
         Parameters:
         rows (list[str]): The text to be searched for aspects.
         aspects (list[str]): The aspects to find in the provided rows.
-        includeGlobalSentiments (boolean): If True, rows with Global Sentiments will be included (rows that do not contain any of the entered aspects).
 
         Returns:
         list[str]: The updated rows with the targeted aspects, surrounded by [B-ASP] example [E-ASP].
@@ -165,12 +164,9 @@ class SentimentAnalyser:
         # Pattern to match aspect as a whole word
         pattern = r'\b{}\b'
 
-        if includeGlobalSentiments:
-            rows = [row.strip() for row in rows]
-        else:
-            # Filters out any rows that do not have any of the entered aspects
-            rows = [row.strip() for row in rows if any(
-                re.search(pattern.format(re.escape(aspect)), row.lower()) for aspect in aspects)]
+        # Filters out any rows that do not have any of the entered aspects
+        rows = [row.strip() for row in rows if any(
+            re.search(pattern.format(re.escape(aspect)), row.lower()) for aspect in aspects)]
 
         modified_rows = []
 
@@ -188,24 +184,21 @@ class SentimentAnalyser:
         return modified_rows
 
     # Aspect-Based Sentiment Analysis
-    def analyse_aspects_sentiment(self, rows, aspects, includeGlobalSentiments=False):
+    def analyse_aspects_sentiment(self, rows, aspects):
         ckpts = available_checkpoints()
         sentiment_classifier = APC.SentimentClassifier(
             checkpoint="english"
         )
 
-        if includeGlobalSentiments:
-            rows = self.find_aspects(
-                rows, aspects, True) if rows else []
-        else:
-            rows = self.find_aspects(
-                rows, aspects) if rows else []
+        rows = self.find_aspects(
+            rows, aspects) if rows else []
 
         if len(rows) < 1:
             return Exception("Error, no data to analyse")
 
         results = []
-
+        
+        # Change to batch predict to improve runtime, see pyabsa docs
         for row in rows:
             sentiment_result = sentiment_classifier.predict(
                 text=row,
