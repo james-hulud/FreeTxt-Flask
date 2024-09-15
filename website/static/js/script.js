@@ -4214,7 +4214,6 @@ document.addEventListener("DOMContentLoaded", function () {
         alert("An error occurred. Please try again.");
       });
   });
-});
 
 function downloadImage() {
   const iframe = document.getElementById("scattertextIframe");

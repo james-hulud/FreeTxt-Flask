@@ -881,10 +881,11 @@ def get_html_scatter():
         scatter_html = session.get('scatter_html')
         
         # Extracting the base filename and its extension
-        base, ext = splitext(basename(scatter_html))
+        base, ext = os.path.splitext(os.path.basename(scatter_html))
         
         # Appending '_logo' before the file extension
         filename_with_logo = f"{base}_logo{ext}"
+        filename = os.path.basename(scatter_html)
 
         # Sending the file from the directory
         return send_from_directory(directory='static/wordcloud', path=filename, as_attachment=True)
@@ -1115,10 +1116,10 @@ def retain_clusters(text, clusters):
 def regenerate_wordcloud():
     if request.method == 'POST':
         request_data = request.get_json(force=True)
-        
+
         # Get the provided words from the request
         provided_words = set(request_data.get('words', []))
-        
+
         label_name = request_data.get('label')
         cloud_shape_path = request_data.get('cloud_shape')
         cloud_outline_color = request_data.get('cloud_outline_color')
@@ -1126,35 +1127,39 @@ def regenerate_wordcloud():
         cloud_measure = request_data['cloud_measure']
         if cloud_shape_path == '':
             cloud_type = 'all_words'
-            #cloud_shape_path = 'https://ucrel-freetxt-2.lancs.ac.uk/website/static/images/img/cloud.png'
-            cloud_shape_path = '/freetxt/website/static/images/img/cloud.png'
-            cloud_outline_color= 'white'
-            cloud_measure='KENESS'
+            cloud_shape_path = 'https://ucrel-freetxt-2.lancs.ac.uk/website/static/images/img/cloud.png'
+            cloud_outline_color = 'white'
+            cloud_measure = 'KENESS'
         # Extract the data and filter based on provided words
         data_json = session.get('mergedData')
-        
+
         input_data = pd.DataFrame(data_json)
-       
+
         # Clean each review in the DataFrame
-        input_data[input_data.columns[0]] = input_data[input_data.columns[0]].apply(clean_review)
-       
+        input_data[input_data.columns[0]
+                   ] = input_data[input_data.columns[0]].apply(clean_review)
+
         # Detect the language using the langdetect package
         combined_text = ' '.join(input_data[0].astype(str))
         try:
             language = detect(combined_text)
         except:
             language = 'en'  # default to English if detection fails
-        
+
         cloud_generator = WordCloudGenerator(input_data)
-        wc_path, word_list = cloud_generator.generate_wordcloud(cloud_shape_path, cloud_outline_color, cloud_type, language ,cloud_measure, provided_words)
-       
+        wc_path, word_list = cloud_generator.generate_wordcloud(
+            cloud_shape_path, cloud_outline_color, cloud_type, language, cloud_measure, provided_words)
+
         session['word_cloud_src'] = wc_path
-        
-        print("regenerating")
-        
+
+        json_data = {
+            "status": "success",
+            "wordcloud_image_path": [wc_path],
+            "word_list": [word_list]
+        }
+
         # Handles the generation of the second cloud, containing the words with the selected semantic tags
         if cloud_type == 'semantic_tags' and session["tokens_with_semantic_tags"]:
-            print("In regenerate word cloud if statement")
             words_tags = session["tokens_with_semantic_tags"]
             words_with_sem_tags = [
                 word for (word, pos, tag) in words_tags if tag in word_list]
@@ -1165,19 +1170,15 @@ def regenerate_wordcloud():
                 word, pos, tag) in words_tags if tag in word_list}
 
             session['sec_word_cloud_src'] = sec_wc_path
-            
-            return jsonify({
+
+            json_data = {
                 "status": "success",
                 "wordcloud_image_path": [wc_path, sec_wc_path],
                 "word_list": [word_list, sec_word_list],
                 "tag_words_associations": tag_words_associations
-                }
-        
-        return jsonify({
-            "status": "success",
-            "wordcloud_image_path": wc_path,
-            "word_list": word_list
-        })
+            }
+
+        return jsonify(json_data)
 
     return jsonify({"status": "error", "message": "Invalid request method"})
 
