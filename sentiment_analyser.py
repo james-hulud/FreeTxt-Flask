@@ -235,7 +235,7 @@ class SentimentAnalyser:
 
         term_scorer = st.RankDifference()
 
-        visualisation_text = "Visualisation by" if language == "en" else "Delweddu gan"
+        visualisation_text = "Visualisation by" if language == "en" else "Gweledigaeth gan"
 
         if language == 'en':
             html = st.produce_scattertext_explorer(

@@ -1546,7 +1546,6 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 function startAnalysisfile_uploaded(event) {
-  console.log("file uploaded");
   event.preventDefault(); // To prevent the form from submitting in the traditional way
   validateForm(event, "upload");
   const formData = new FormData(document.getElementById("text-analysis-form"));
@@ -1963,19 +1962,17 @@ function sendSelectedRows() {
     },
     body: JSON.stringify({ mergedData: mergedData, language: currentLang }),
   })
-  .then(response => {
-    if (!response.ok) {
-        throw new Error('Network response was not ok: ' + response.statusText);
-    }
-    const contentType = response.headers.get("content-type");
-    if (!contentType || !contentType.includes('application/json')) {
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error("Network response was not ok: " + response.statusText);
+      }
+      const contentType = response.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
         throw new TypeError("Oops, we haven't got JSON!");
-    }
-    return response.json();
-  })
-  .then(data => {
-     
-
+      }
+      return response.json();
+    })
+    .then((data) => {
       if (data.status === "success") {
         loadingElement.style.display = "none";
         document.getElementById("SentimentAnalysisContainer").style.display =
@@ -3923,6 +3920,7 @@ function downloadWordTree() {
 
 async function handleCategoryChange() {
   const subCategoryDropdown = document.getElementById("subCategoryDropdown");
+  const includeAllWordData = document.getElementById("includeAllDataDiv");
 
   // Clear the current options
   while (subCategoryDropdown.firstChild) {
@@ -3930,10 +3928,12 @@ async function handleCategoryChange() {
   }
 
   if (document.getElementById("wordRadio").checked) {
+    includeAllWordData.style.display = "block"; // Display checkbox
     $("#word-freq-include-all-check").is(":checked")
       ? populateDropdown(unfilteredWordFrequencies)
       : populateDropdown(wordFrequencies);
   } else if (document.getElementById("posTagRadio").checked) {
+    includeAllWordData.style.display = "none"; // Hide checkbox
     const posTags = [
       { value: "NOUN", en: "Nouns", cy: "Enwau" },
       { value: "PROPN", en: "Proper nouns", cy: "Enwau priod" },
@@ -3976,6 +3976,7 @@ async function handleCategoryChange() {
       updateOptionsLanguage();
     });
   } else if (document.getElementById("semanticTagRadio").checked) {
+    includeAllWordData.style.display = "none"; // Hide checkbox
     const semanticTags = semantictags;
 
     semanticTags.forEach((tag, i) => {
@@ -4035,13 +4036,13 @@ function fetchAndParseCSV() {
       const results = Papa.parse(csv, { header: true });
       return results.data;
     });
-    
-    return fetch("https://ucrel-freetxt-2.lancs.ac.uk/static/keness/Cy_tags.csv")
-        .then(response => response.text())
-        .then(csv => {
-            const results = Papa.parse(csv, { header: true });
-            return results.data;
-        });
+
+  return fetch("https://ucrel-freetxt-2.lancs.ac.uk/static/keness/Cy_tags.csv")
+    .then((response) => response.text())
+    .then((csv) => {
+      const results = Papa.parse(csv, { header: true });
+      return results.data;
+    });
 }
 
 $(document).ready(function () {
@@ -4154,41 +4155,11 @@ document.addEventListener("DOMContentLoaded", function () {
       console.log(pair[0] + ": " + pair[1]);
     }
 
-        // Use fetch API to send the data to the server
-        fetch('/submitfeedback', {
-            method: 'POST',
-            body: formData,
-            credentials: 'include', // If your setup requires credentials
-            headers: {
-                'Accept': 'application/json',
-            }
-        })
-        .then(response => {
-            if (response.headers.get("Content-Type").includes("application/json")) {
-                return response.json();
-            } else {
-                throw new Error('Non-JSON response from server');
-            }
-        })
-        .then(data => {
-            console.log('Success:', data);
-            // Optionally, provide feedback to the user or close the feedback tab
-            feedbackTab.style.right = '-800px'; // Close the tab
-            // Reset the form or show a success message
-            feedbackForm.reset();
-            document.getElementById("feedback-form").style.display = 'none';
-            alert(data.message); // Displaying an alert with the response message
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('An error occurred. Please try again.');
-        });
-    });
     // Use fetch API to send the data to the server
     fetch("/submitfeedback", {
       method: "POST",
       body: formData,
-      credentials: "include",
+      credentials: "include", // If your setup requires credentials
       headers: {
         Accept: "application/json",
       },
@@ -4214,6 +4185,36 @@ document.addEventListener("DOMContentLoaded", function () {
         alert("An error occurred. Please try again.");
       });
   });
+  // Use fetch API to send the data to the server
+  fetch("/submitfeedback", {
+    method: "POST",
+    body: formData,
+    credentials: "include",
+    headers: {
+      Accept: "application/json",
+    },
+  })
+    .then((response) => {
+      if (response.headers.get("Content-Type").includes("application/json")) {
+        return response.json();
+      } else {
+        throw new Error("Non-JSON response from server");
+      }
+    })
+    .then((data) => {
+      console.log("Success:", data);
+      // Optionally, provide feedback to the user or close the feedback tab
+      feedbackTab.style.right = "-800px"; // Close the tab
+      // Reset the form or show a success message
+      feedbackForm.reset();
+      document.getElementById("feedback-form").style.display = "none";
+      alert(data.message); // Displaying an alert with the response message
+    })
+    .catch((error) => {
+      console.error("Error:", error);
+      alert("An error occurred. Please try again.");
+    });
+});
 
 function downloadImage() {
   const iframe = document.getElementById("scattertextIframe");

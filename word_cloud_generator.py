@@ -21,6 +21,7 @@ from langdetect import detect
 import spacy
 import math
 import imageio
+import site
 nlp = spacy.load('/freetxt/en_core_web_sm-3.2.0')  # Load the spaCy model
 nlp.max_length = 9000000
 nltk.download('punkt')
@@ -290,8 +291,7 @@ class WordCloudGenerator:
            # frequency_dist = {word: custom_scale(freq, max_freq) for word, freq in frequency_dist.items()}
         elif dataframe.empty:
             if word_list == f"No words of type '{cloud_type}' found. Please select another word type.":
-                filters = [f"No words of type '{
-                    cloud_type}' found. Please select another word type."]
+                filters = [f"No words of type '{cloud_type}' found. Please select another word type."]
                 return f'static/wordcloud/wordcloud.png', filters
             else:
                 frequency_dist = Counter(filtered_words)
