@@ -16,7 +16,9 @@ nlp.max_length = 9000000
 # stopwords_files
 # Update with the Welsh stopwords (source: https://github.com/techiaith/ataleiriau)
 en_stopwords = list(stopwords.words('english'))
-cy_stopwords = open('/freetxt/website/data/welsh_stopwords.txt', 'r', encoding='iso-8859-1').read().split('\n') # replaced 'utf8' with 'iso-8859-1'
+cy_stopwords = open('/freetxt/website/data/welsh_stopwords.txt', 'r',
+                    # replaced 'utf8' with 'iso-8859-1'
+                    encoding='iso-8859-1').read().split('\n')
 STOPWORDS = set(en_stopwords + cy_stopwords)
 PUNCS = '''!→()-[]{};:'"\,<>?@#$%^&*_~'''
 
@@ -197,7 +199,7 @@ class SentimentAnalyser:
             return Exception("Error, no data to analyse")
 
         results = []
-        
+
         # Change to batch predict to improve runtime, see pyabsa docs
         for row in rows:
             sentiment_result = sentiment_classifier.predict(
@@ -233,27 +235,26 @@ class SentimentAnalyser:
         ).build()
 
         term_scorer = st.RankDifference()
-         ## # Determine which text to use based on the selected language
+        # Determine which text to use based on the selected language
         visualisation_text_en = "Visualisation by"
         visualisation_text_cy = "Gweledigaeth gan"
         if language == 'en':
             visualisation_text = visualisation_text_en
         elif language == 'cy':
-             visualisation_text = visualisation_text_cy       
+            visualisation_text = visualisation_text_cy
         if language == 'en':
             html = st.produce_scattertext_explorer(
-            corpus,
-            category="Positive",
-            category_name="Positive",   
-            not_category_name='Negative_and_Neutral',
-            not_categories=df["Sentiment Label"].unique().tolist(),
-            minimum_term_frequency=5,
-            pmi_threshold_coefficient=5,
-            width_in_pixels=900,
-            width_in_pixels=900,
-            metadata=df["Sentiment Label"],
-            term_scorer=term_scorer
-        ) 
+                corpus,
+                category="Positive",
+                category_name="Positive",
+                not_category_name='Negative_and_Neutral',
+                not_categories=df["Sentiment Label"].unique().tolist(),
+                minimum_term_frequency=5,
+                pmi_threshold_coefficient=5,
+                width_in_pixels=900,
+                metadata=df["Sentiment Label"],
+                term_scorer=term_scorer
+            )
         elif language == 'cy':
             html = st.produce_scattertext_explorer(
                 corpus,
@@ -282,13 +283,14 @@ class SentimentAnalyser:
             html = html.replace('per', 'fesul')
             html = html.replace('words', 'gair')
             html = html.replace('score', 'sgôr')
-            html = html.replace('frequency','amlder')        
-            html = html.replace('terms','termau')
-            html = html.replace('docs','dogfennau')
-            html = html.replace('documents','dogfennau')
-            html = html.replace('Not found in any','Heb ei g/eu canfod o gwbl')
-            html = html.replace('Some of the','Rhai o’r')
-            html = html.replace('mentions','crybwylliadau')        
+            html = html.replace('frequency', 'amlder')
+            html = html.replace('terms', 'termau')
+            html = html.replace('docs', 'dogfennau')
+            html = html.replace('documents', 'dogfennau')
+            html = html.replace('Not found in any',
+                                'Heb ei g/eu canfod o gwbl')
+            html = html.replace('Some of the', 'Rhai o’r')
+            html = html.replace('mentions', 'crybwylliadau')
         # Prevents svg being cut off
         custom_script = """
         <script>
@@ -306,7 +308,8 @@ class SentimentAnalyser:
         timestamp = int(time.time())
 
         # Constructing the file path
-        filename = os.path.join("/freetxt/website/static/wordcloud", f"scattertext_visualization_{timestamp}.html")
+        filename = os.path.join(
+            "/freetxt/website/static/wordcloud", f"scattertext_visualization_{timestamp}.html")
         with open(filename, "w", encoding='utf-8') as f:
             f.write(html)
             f.close()
@@ -316,14 +319,12 @@ class SentimentAnalyser:
     </div>
     """
         html += addition
-        filename_logo = os.path.join("/freetxt/website/static/wordcloud", f"scattertext_visualization_{timestamp}_logo.html")
+        filename_logo = os.path.join(
+            "/freetxt/website/static/wordcloud", f"scattertext_visualization_{timestamp}_logo.html")
     # Saving the updated HTML content to the file with UTF-8 encoding
         with open(filename_logo, "w", encoding='utf-8') as f_logo:
             f_logo.write(html)
             f_logo.close()
-        
-
-        
 
         # Returning the relative path for web access
         return f"static/wordcloud/scattertext_visualization_{timestamp}.html"

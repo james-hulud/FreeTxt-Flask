@@ -1963,19 +1963,17 @@ function sendSelectedRows() {
     },
     body: JSON.stringify({ mergedData: mergedData, language: currentLang }),
   })
-  .then(response => {
-    if (!response.ok) {
-        throw new Error('Network response was not ok: ' + response.statusText);
-    }
-    const contentType = response.headers.get("content-type");
-    if (!contentType || !contentType.includes('application/json')) {
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error("Network response was not ok: " + response.statusText);
+      }
+      const contentType = response.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
         throw new TypeError("Oops, we haven't got JSON!");
-    }
-    return response.json();
-  })
-  .then(data => {
-     
-
+      }
+      return response.json();
+    })
+    .then((data) => {
       if (data.status === "success") {
         loadingElement.style.display = "none";
         document.getElementById("SentimentAnalysisContainer").style.display =
@@ -2352,14 +2350,19 @@ function renderWordCheckboxes(wordList) {
   const selectAllLabel = document.createElement("label");
   const selectAllCheckbox = document.createElement("input");
   selectAllCheckbox.type = "checkbox";
+  selectAllCheckbox.id = "wordcloud-all-selector-check";
   selectAllCheckbox.onclick = function () {
     toggleCheckboxes(this.checked);
   };
-  selectAllContainer.classList.add("mb-1");
-  selectAllLabel.appendChild(selectAllCheckbox);
-  selectAllLabel.appendChild(document.createTextNode(" All"));
-  selectAllLabel.classList.add("px-1", "text-break");
+  selectAllContainer.classList.add("d-flex", "px-1");
+  selectAllLabel.appendChild(
+    document.createTextNode(getCurrentLanguage() === "en" ? " All" : " Popeth")
+  );
+  selectAllLabel.classList.add("text-break");
   selectAllCheckbox.classList.add("word-checkbox-all", "my-1");
+  selectAllLabel.id = "wordcloud-all-selector";
+  selectAllLabel.htmlFor = "wordcloud-all-selector-check";
+  selectAllContainer.appendChild(selectAllCheckbox);
   selectAllContainer.appendChild(selectAllLabel);
   wordListContainer.appendChild(selectAllContainer);
 
@@ -3607,6 +3610,10 @@ $(document).ready(function () {
       language === "en"
         ? selectOptBtn.text("-- Select --")
         : selectOptBtn.text("-- Dewis --");
+
+      // Update the word cloud all selector
+      const allSelector = $("#wordcloud-all-selector");
+      allSelector.text(language === "en" ? " All" : " Popeth");
     }
 
     // Update placeholder text for aspect input
@@ -3923,6 +3930,7 @@ function downloadWordTree() {
 
 async function handleCategoryChange() {
   const subCategoryDropdown = document.getElementById("subCategoryDropdown");
+  const allDataCheck = document.getElementById("include-all-data-check");
 
   // Clear the current options
   while (subCategoryDropdown.firstChild) {
@@ -3930,10 +3938,12 @@ async function handleCategoryChange() {
   }
 
   if (document.getElementById("wordRadio").checked) {
+    allDataCheck.style.display = "block";
     $("#word-freq-include-all-check").is(":checked")
       ? populateDropdown(unfilteredWordFrequencies)
       : populateDropdown(wordFrequencies);
   } else if (document.getElementById("posTagRadio").checked) {
+    allDataCheck.style.display = "none";
     const posTags = [
       { value: "NOUN", en: "Nouns", cy: "Enwau" },
       { value: "PROPN", en: "Proper nouns", cy: "Enwau priod" },
@@ -3976,6 +3986,7 @@ async function handleCategoryChange() {
       updateOptionsLanguage();
     });
   } else if (document.getElementById("semanticTagRadio").checked) {
+    allDataCheck.style.display = "none";
     const semanticTags = semantictags;
 
     semanticTags.forEach((tag, i) => {
