@@ -3560,6 +3560,7 @@ function validateForm(event, type) {
 
 $(document).ready(function () {
   function switchLanguage(language) {
+    console.log("Switching language");
     $("[data-lang-en], [data-lang-cy]").each(function () {
       if (language === "en") {
         $(this).text($(this).attr("data-lang-en"));
@@ -3610,10 +3611,6 @@ $(document).ready(function () {
       language === "en"
         ? selectOptBtn.text("-- Select --")
         : selectOptBtn.text("-- Dewis --");
-
-      // Update the word cloud all selector
-      const allSelector = $("#wordcloud-all-selector");
-      allSelector.text(language === "en" ? " All" : " Popeth");
     }
 
     // Update placeholder text for aspect input
@@ -3623,6 +3620,10 @@ $(document).ready(function () {
         : "Rhowch agweddau sydd wedi'u gwahanu gan atalnodau, e.e., enghraifft, agwedd, yma";
 
     $("#absa-aspects-to-analyze").attr("placeholder", aspectPlaceholderText);
+
+    // Update the word cloud all selector
+    const allSelector = $("#wordcloud-all-selector");
+    allSelector.text(language === "en" ? " All" : " Popeth");
 
     localStorage.setItem("chosenLanguage", language);
   }
