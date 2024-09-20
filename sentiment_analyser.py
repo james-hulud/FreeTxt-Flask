@@ -1,5 +1,6 @@
 import nltk
 from nltk.corpus import stopwords
+import spacy.tokens
 import torch
 import numpy as np
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
@@ -12,6 +13,7 @@ from pyabsa import AspectPolarityClassification as APC, available_checkpoints
 
 nlp = spacy.load('/freetxt/en_core_web_sm-3.2.0')  # Load the spaCy model
 nlp.max_length = 9000000
+nlp.add_pipe('sentencizer')
 
 # stopwords_files
 # Update with the Welsh stopwords (source: https://github.com/techiaith/ataleiriau)
@@ -216,7 +218,7 @@ class SentimentAnalyser:
 
         return results
 
-    def generate_scattertext_visualization(self, dfanalysis, language):
+    def generate_scattertext_visualization(self, dfanalysis, language, filterStopwords=False):        
         # Get the DataFrame with sentiment analysis results
         df = dfanalysis
         positive_label = "Cadarnhaol" if language == 'cy' else "Positive"
@@ -227,12 +229,20 @@ class SentimentAnalyser:
 
         # Parse the text using spaCy
         df['ParsedReview'] = df['Review'].apply(nlp)
+        
+        
+        #! Issue is with this
+        # if filterStopwords:
+        #     # Filter out stopwords, punctuation, numbers or symbols
+        #     df['ParsedReview'] = df['ParsedReview'].apply(remove_stopwords)
 
         corpus = st.CorpusFromParsedDocuments(
             df,
             category_col="Sentiment Label",
             parsed_col="ParsedReview"
         ).build()
+        
+        print("corpus fine")
 
         term_scorer = st.RankDifference()
         # Determine which text to use based on the selected language
@@ -306,6 +316,9 @@ class SentimentAnalyser:
         """
 
         timestamp = int(time.time())
+        
+        # Adding script to plot
+        html += custom_script
 
         # Constructing the file path
         filename = os.path.join(
@@ -327,6 +340,7 @@ class SentimentAnalyser:
             f_logo.close()
 
         # Returning the relative path for web access
+        print("end of function")
         return f"static/wordcloud/scattertext_visualization_{timestamp}.html"
 
 
@@ -357,3 +371,22 @@ def wrap_html_content(file_name):
 
     # print(f"Content wrapped and saved to {output_file_name}")
     return output_file_name
+
+
+# Filters stopwords from spacy doc object, also removes any punctuation, numbers and symbols
+def remove_stopwords(doc):
+    from spacy.attrs import LOWER, POS, ENT_TYPE, IS_ALPHA
+
+    indexes = [idx for (idx, token) in enumerate(
+        doc) if token.is_stop or token.pos_ in ("PUNCT", "NUM", "SYM")]
+
+    # Converts doc to numpy style array
+    np_array = doc.to_array([LOWER, POS, ENT_TYPE, IS_ALPHA])
+
+    # Deletes sub array
+    np_array = np.delete(np_array, indexes, axis=0)
+
+    doc2 = spacy.tokens.Doc(doc.vocab, words=[
+                            token.text for idx, token in enumerate(doc) if idx not in indexes])
+    doc2.from_array([LOWER, POS, ENT_TYPE, IS_ALPHA], np_array)
+    return doc2

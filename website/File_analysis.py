@@ -574,6 +574,7 @@ def handle_selected_rows():
 
     try:
         df_sentiment = pd.DataFrame(sentiment_data)
+        session["df_sentiment"] = df_sentiment
 
         with file_lock:
             scatter_text_html = sentiment_analyser.generate_scattertext_visualization(
@@ -583,7 +584,6 @@ def handle_selected_rows():
         print("Error in DataFrame or visualization:", e)
     session['scatter_html'] = scatter_text_html
 
-    print("Creating word tree")
     # Word Tree Generator
     sentences = [[s] for s in merged_rows]
     wordTreeData = sentences
@@ -801,43 +801,46 @@ def get_file_list():
 @FileAnalysis.route('/generate-pdf', methods=['POST'])
 def generate_pdf():
     if request.method == 'POST':
-        selected_sections = request.form.getlist('sections') if 'sections' in request.form else []
+        selected_sections = request.form.getlist(
+            'sections') if 'sections' in request.form else []
         if 'keyword_results' in session:
             keyword_results = session.get('keyword_results')
-            keyword_content = [{'Left Context': item[0], 'Keyword': item[1], 'Right Context': item[2]} for item in keyword_results]
+            keyword_content = [{'Left Context': item[0], 'Keyword': item[1],
+                                'Right Context': item[2]} for item in keyword_results]
         else:
-            keyword_content=[{'Left Context':'please select a keyword first','Keyword':'','Right Context':''}] 
+            keyword_content = [
+                {'Left Context': 'please select a keyword first', 'Keyword': '', 'Right Context': ''}]
         file_name = session.get('uploaded_file_name', 'No file uploaded')
-        
+
         sentiment_explanation = request.form['sentiment_explanation'] if 'sentiment_explanation' in request.form else ""
-        ##request.form['sentimentViewContent'] if 'sentimentViewContent' in request.form else ""
-        #SentimentPlot = request.form['SentimentPlot'] if 'SentimentPlot' in request.form else ""
-        #SentimentPlotbar = request.form['SentimentPlotbar'] if 'SentimentPlotbar' in request.form else ""
-        wordtree=request.form['wordtree'] if 'wordtree' in request.form else ""
+        # request.form['sentimentViewContent'] if 'sentimentViewContent' in request.form else ""
+        # SentimentPlot = request.form['SentimentPlot'] if 'SentimentPlot' in request.form else ""
+        # SentimentPlotbar = request.form['SentimentPlotbar'] if 'SentimentPlotbar' in request.form else ""
+        wordtree = request.form['wordtree'] if 'wordtree' in request.form else ""
         cloudtype = request.form['Cloud_type'] if 'Cloud_type' in request.form else ""
         cloudmeasure = request.form['Cloud_measure'] if 'Cloud_measure' in request.form else ""
-        summary=request.form['summaryField'] if 'summaryField' in request.form else ""
+        summary = request.form['summaryField'] if 'summaryField' in request.form else ""
         SentimentPlot = 'https://ucrel-freetxt-2.lancs.ac.uk/static/Sentiment_plots/sentiment_pie.png'
-        SentimentPlotbar= 'https://ucrel-freetxt-2.lancs.ac.uk/static/Sentiment_plots/sentiment_bar.png'
+        SentimentPlotbar = 'https://ucrel-freetxt-2.lancs.ac.uk/static/Sentiment_plots/sentiment_bar.png'
         word_cloud_image_src = request.form['wordCloudImageSrc'] if 'wordCloudImageSrc' in request.form else ""
-        
-        rendered_html = render_template('report.html', 
+
+        rendered_html = render_template('report.html',
                                         # Assuming you want to use it in the template
-                                       keyword_content=keyword_content, SentimentPlot=SentimentPlot,
-                                       SentimentPlotbar=SentimentPlotbar,wordtree=wordtree, sentiment_explanation=sentiment_explanation,
-                                       word_cloud_image_src=word_cloud_image_src, summary = summary, selected_sections=selected_sections,
-                                      cloudmeasure= cloudmeasure, file_name=file_name,
-                                       cloudtype=cloudtype, datetime=datetime)
-        
+                                        keyword_content=keyword_content, SentimentPlot=SentimentPlot,
+                                        SentimentPlotbar=SentimentPlotbar, wordtree=wordtree, sentiment_explanation=sentiment_explanation,
+                                        word_cloud_image_src=word_cloud_image_src, summary=summary, selected_sections=selected_sections,
+                                        cloudmeasure=cloudmeasure, file_name=file_name,
+                                        cloudtype=cloudtype, datetime=datetime)
+
         # Convert HTML to PDF using WeasyPrint
         pdf = HTML(string=rendered_html).write_pdf()
-    
+
         # Send the generated PDF as a response
         response = Response(pdf, content_type='application/pdf')
         response.headers['Content-Disposition'] = 'inline; filename=report.pdf'
         return response
     else:
-        # Handle GET request if needed. 
+        # Handle GET request if needed.
         return "This endpoint accepts POST requests with form data to generate a PDF."
 
 
@@ -1427,6 +1430,40 @@ def aspect_based_sentiment_analysis():
         "plots": html_plots,
         "sentimentData": sentiment_data
     })
+
+
+@FileAnalysis.route('/regenerate-scatter-plot', methods=['POST'])
+def regenerate_scatter_plot():
+    print("regenerating scatter")
+    try:
+        if "df_sentiment" in session:
+            print("In if")
+            df_sentiment = session["df_sentiment"]
+            sentiment_analyser = SentimentAnalyser()
+            language = session["language"] if "language" in session else "en"
+            print("before scatter text")
+            
+            print(df_sentiment.head())
+            
+            with file_lock:
+                scatter_text_html = sentiment_analyser.generate_scattertext_visualization(
+                    df_sentiment, language, True)
+                
+            print("scatter text below")
+            print(scatter_text_html)
+            
+            json_data = {
+                "status": "success",
+                "scatterTextHtml": scatter_text_html
+            }
+        else:
+            json_data = {"status": "error", "message": "Error regenerating scatter plot."}
+            
+    except Exception as e:
+        json_data = {"status": "error", "message": f"Error regenerating scatter plot:\n{e}"}
+        print(e)
+        
+    return jsonify(json_data)
 
 
 def remove_previous_plots(directory, substring):

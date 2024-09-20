@@ -4267,4 +4267,27 @@ function updateOptionValues() {
   });
 }
 
+function regenerateScatterPlot() {
+  fetch("/regenerate-scatter-plot", { method: "POST" })
+    .then((response) => response.json())
+    .then((data) => {
+      const iframeEle = document.getElementById("scatterTextIframe");
+      iframeEle.innerHTML = "";
+
+      console.log("data here");
+      console.log(data.scatterTextHtml);
+
+      requestAnimationFrame(() => {
+        iframeElem.src = data.scatterTextHtml + "?t=" + new Date().getTime();
+      });
+      document.getElementById("scattertextIframe").style.display = "none";
+      setTimeout(() => {
+        document.getElementById("scattertextIframe").style.display = "block";
+      }, 50);
+    })
+    .catch((error) => {
+      console.log(error);
+    });
+}
+
 window.onload = updateOptionValues;
