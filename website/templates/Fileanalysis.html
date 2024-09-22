@@ -1164,7 +1164,23 @@
         provides more details, like the frequency per 1,000 Reddit posts
         ('doc').
       </p>
-
+      <div class="container-fluid mt-4 px-0">
+        <div class="form-check">
+          <input
+            class="form-check-input"
+            type="checkbox"
+            id="regenerate-scatter-check"
+            onchange="regenerateScatterPlot()"
+          />
+          <label
+            class="form-check-label"
+            for="regenerate-scatter-check"
+            data-lang-en="Exclude stopwords (Regenerates plot)"
+            data-lang-cy="Needs Welsh translation"
+            >Exclude stopwords (Regenerates plot)</label
+          >
+        </div>
+      </div>
       <iframe
         id="scattertextIframe"
         src=""
@@ -1173,15 +1189,6 @@
         frameborder="0"
         style="overflow: visible"
       ></iframe>
-      <div>
-        <button
-          class="analyze-btn"
-          data-lang-en="Regenerate plot"
-          onclick="regenerateScatterPlot()"
-        >
-          Regenerate plot
-        </button>
-      </div>
       <a href="/get-html-scatter" download>
         <button
           class="analyze-btn"

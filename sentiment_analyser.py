@@ -230,19 +230,17 @@ class SentimentAnalyser:
         # Parse the text using spaCy
         df['ParsedReview'] = df['Review'].apply(nlp)
         
-        
-        #! Issue is with this
-        # if filterStopwords:
-        #     # Filter out stopwords, punctuation, numbers or symbols
-        #     df['ParsedReview'] = df['ParsedReview'].apply(remove_stopwords)
-
         corpus = st.CorpusFromParsedDocuments(
             df,
             category_col="Sentiment Label",
             parsed_col="ParsedReview"
         ).build()
         
-        print("corpus fine")
+        if filterStopwords:
+            try:
+                corpus = corpus.remove_terms(terms=en_stopwords, ignore_absences=True)
+            except Exception as e:
+                print(f"Error removing stopwords:\n{e}")
 
         term_scorer = st.RankDifference()
         # Determine which text to use based on the selected language
@@ -340,7 +338,6 @@ class SentimentAnalyser:
             f_logo.close()
 
         # Returning the relative path for web access
-        print("end of function")
         return f"static/wordcloud/scattertext_visualization_{timestamp}.html"
 
 

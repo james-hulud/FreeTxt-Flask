@@ -214,12 +214,6 @@ def fileanalysis():
             file_extension = os.path.splitext(
                 file_path)[1].lower()  # Extract the file extension
 
-            print()
-            print()
-            print("file path and ext")
-            print(file_path)
-            print(file_extension)
-
             # Differentiate the behavior based on the file extension
             if file_extension == '.txt':
                 with open(file_path, 'r', encoding='utf-8') as f:
@@ -259,7 +253,6 @@ def fileanalysis():
             return jsonify({"columns": list(data.columns)})
 
         elif input_method == 'upload':
-            print("UPLOADED!!")
             #! Limit allowed file size
             # Before saving the new file path, let's clean up any previously uploaded file
             previous_file_path = session.get('uploaded_file_path')
@@ -1434,30 +1427,26 @@ def aspect_based_sentiment_analysis():
 
 @FileAnalysis.route('/regenerate-scatter-plot', methods=['POST'])
 def regenerate_scatter_plot():
-    print("regenerating scatter")
+    exclude_stopwords = request.get_json(force=True)
+    
     try:
         if "df_sentiment" in session:
-            print("In if")
             df_sentiment = session["df_sentiment"]
             sentiment_analyser = SentimentAnalyser()
             language = session["language"] if "language" in session else "en"
-            print("before scatter text")
-            
-            print(df_sentiment.head())
             
             with file_lock:
                 scatter_text_html = sentiment_analyser.generate_scattertext_visualization(
-                    df_sentiment, language, True)
-                
-            print("scatter text below")
-            print(scatter_text_html)
+                    df_sentiment, language, exclude_stopwords)
+            
+            session['scatter_html'] = scatter_text_html
             
             json_data = {
                 "status": "success",
                 "scatterTextHtml": scatter_text_html
             }
         else:
-            json_data = {"status": "error", "message": "Error regenerating scatter plot."}
+            raise Exception("Error. No sentiment data in session.")
             
     except Exception as e:
         json_data = {"status": "error", "message": f"Error regenerating scatter plot:\n{e}"}

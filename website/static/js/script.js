@@ -924,7 +924,6 @@ function displaySentences(sentences) {
 
 // Retired function, replaced with sendSelectedRows
 function sendSelectedSentences() {
-  console.log("sendSelectedSentences called");
   const checkedBoxes = document.querySelectorAll(".sentence-check:checked");
   const selectedSentences = Array.from(checkedBoxes).map((cb) => cb.value);
   const summaryElement = document.getElementById("summary");
@@ -1546,7 +1545,6 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 function startAnalysisfile_uploaded(event) {
-  console.log("file uploaded");
   event.preventDefault(); // To prevent the form from submitting in the traditional way
   validateForm(event, "upload");
   const formData = new FormData(document.getElementById("text-analysis-form"));
@@ -1848,8 +1846,6 @@ let semantictags = {};
 let isWordTreeClicked;
 
 function sendSelectedRows() {
-  console.log("sendSelectedRows called");
-
   // Fetch the container holding the column labels
   const container = document.getElementById("columnLabelsContainer");
 
@@ -3560,7 +3556,6 @@ function validateForm(event, type) {
 
 $(document).ready(function () {
   function switchLanguage(language) {
-    console.log("Switching language");
     $("[data-lang-en], [data-lang-cy]").each(function () {
       if (language === "en") {
         $(this).text($(this).attr("data-lang-en"));
@@ -4132,17 +4127,13 @@ document.addEventListener("DOMContentLoaded", function () {
   const feedbackForm = document.getElementById("feedback-form");
 
   feedbackButton.addEventListener("click", function (event) {
-    console.log("Button clicked!");
     const isTabOpen = feedbackTab.style.right === "0px";
-    console.log("Is Tab Open:", isTabOpen);
 
     if (isTabOpen) {
       feedbackTab.style.right = "-800px";
-      console.log("Closing Tab");
     } else {
       feedbackTab.style.right = "0px";
       feedbackForm.style.display = "block";
-      console.log("Opening Tab");
     }
     event.stopPropagation();
   });
@@ -4152,7 +4143,6 @@ document.addEventListener("DOMContentLoaded", function () {
     event.preventDefault(); // Prevent the default form submission
 
     const formData = new FormData(this); // Collect form data
-    console.log("Submitting Feedback");
 
     // Log each form field to the console
     for (let pair of formData.entries()) {
@@ -4176,7 +4166,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }
       })
       .then((data) => {
-        console.log("Success:", data);
         // Optionally, provide feedback to the user or close the feedback tab
         feedbackTab.style.right = "-800px"; // Close the tab
         // Reset the form or show a success message
@@ -4268,25 +4257,36 @@ function updateOptionValues() {
 }
 
 function regenerateScatterPlot() {
-  fetch("/regenerate-scatter-plot", { method: "POST" })
+  const loadingElement = document.getElementById("loading");
+  loadingElement.style.display = "flex";
+
+  const excludeStopwords = document.getElementById("regenerate-scatter-check")
+    .checked
+    ? true
+    : false;
+
+  fetch("/regenerate-scatter-plot", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      language: getCurrentLanguage(),
+    },
+    body: excludeStopwords,
+  })
     .then((response) => response.json())
     .then((data) => {
-      const iframeEle = document.getElementById("scatterTextIframe");
-      iframeEle.innerHTML = "";
+      const iframeElem = document.getElementById("scattertextIframe");
+      document.getElementById("scattertextIframe").style.opacity = 0;
+      iframeElem.src = data.scatterTextHtml + "?t=" + new Date().getTime();
 
-      console.log("data here");
-      console.log(data.scatterTextHtml);
-
-      requestAnimationFrame(() => {
-        iframeElem.src = data.scatterTextHtml + "?t=" + new Date().getTime();
-      });
-      document.getElementById("scattertextIframe").style.display = "none";
       setTimeout(() => {
-        document.getElementById("scattertextIframe").style.display = "block";
-      }, 50);
+        document.getElementById("scattertextIframe").style.opacity = 100;
+        loadingElement.style.display = "none";
+      }, 100);
     })
     .catch((error) => {
-      console.log(error);
+      console.error(`Error regenerating scatter plot:\n${error}`);
+      loadingElement.style.display = "none";
     });
 }
 
