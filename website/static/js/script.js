@@ -2350,10 +2350,17 @@ function renderWordCheckboxes(wordList) {
   selectAllCheckbox.onclick = function () {
     toggleCheckboxes(this.checked);
   };
-  selectAllContainer.classList.add("d-flex", "px-1");
+  selectAllContainer.classList.add(
+    "d-flex",
+    "px-1",
+    "align-items-start",
+    "my-1"
+  );
   selectAllLabel.appendChild(
     document.createTextNode(getCurrentLanguage() === "en" ? " All" : " Popeth")
   );
+  selectAllLabel.setAttribute("data-lang-en", " All");
+  selectAllLabel.setAttribute("data-lang-cy", " Popeth");
   selectAllLabel.classList.add("text-break");
   selectAllCheckbox.classList.add("word-checkbox-all", "my-1");
   selectAllLabel.id = "wordcloud-all-selector";
@@ -2361,6 +2368,7 @@ function renderWordCheckboxes(wordList) {
   selectAllContainer.appendChild(selectAllCheckbox);
   selectAllContainer.appendChild(selectAllLabel);
   wordListContainer.appendChild(selectAllContainer);
+  
 
   // Generate checkboxes for words
   wordList.sort().forEach((word) => {
@@ -3615,10 +3623,6 @@ $(document).ready(function () {
         : "Rhowch agweddau sydd wedi'u gwahanu gan atalnodau, e.e., enghraifft, agwedd, yma";
 
     $("#absa-aspects-to-analyze").attr("placeholder", aspectPlaceholderText);
-
-    // Update the word cloud all selector
-    const allSelector = $("#wordcloud-all-selector");
-    allSelector.text(language === "en" ? " All" : " Popeth");
 
     localStorage.setItem("chosenLanguage", language);
   }

@@ -18,9 +18,10 @@ nlp.add_pipe('sentencizer')
 # stopwords_files
 # Update with the Welsh stopwords (source: https://github.com/techiaith/ataleiriau)
 en_stopwords = list(stopwords.words('english'))
-cy_stopwords = open('/freetxt/website/data/welsh_stopwords.txt', 'r',
-                    # replaced 'utf8' with 'iso-8859-1'
-                    encoding='iso-8859-1').read().split('\n')
+
+with open('/freetxt/website/data/welsh_stopwords.txt', 'r', encoding='iso-8859-1') as f: # replaced 'utf8' with 'iso-8859-1'
+    cy_stopwords = f.read().split('\n')
+    f.close()
 STOPWORDS = set(en_stopwords + cy_stopwords)
 PUNCS = '''!→()-[]{};:'"\,<>?@#$%^&*_~'''
 

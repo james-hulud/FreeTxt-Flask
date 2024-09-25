@@ -20,7 +20,7 @@ import io
 from langdetect import detect
 import spacy
 import math
-import imageio
+import imageio.v2
 nlp = spacy.load('/freetxt/en_core_web_sm-3.2.0')  # Load the spaCy model
 nlp.max_length = 9000000
 nltk.download('punkt')
@@ -35,12 +35,12 @@ path_to_model = Path(
 # stopwords_files
 # Update with the Welsh stopwords (source: https://github.com/techiaith/ataleiriau)
 en_stopwords = list(stopwords.words('english'))
-cy_stopwords = open('/freetxt/website/data/welsh_stopwords.txt', 'r',
-                    # replaced 'utf8' with 'iso-8859-1'
-                    encoding='iso-8859-1').read().split('\n')
+with open('/freetxt/website/data/welsh_stopwords.txt', 'r', encoding='iso-8859-1') as f: # replaced 'utf8' with 'iso-8859-1'
+    cy_stopwords = f.read().split('\n')
+    f.close()
 STOPWORDS = set(en_stopwords + cy_stopwords)
 PUNCS = string.punctuation
-PUNCS += '''!→()-[]{};:'"\,<>./?@#$%^&*_~.'''
+PUNCS += r'''!→()-[]{};:"\,<>./?@#$%&*_~.'''
 
 
 def cleanup_old_graphs(directory, age_in_seconds=20):
@@ -120,7 +120,7 @@ class WordCloudGenerator:
             # Read the response into a DataFrame
             cy_tagged = pd.read_csv(io.StringIO(response.text), sep='\t')
             cy_tagged['USAS Tags'] = cy_tagged['USAS Tags'].str.split(
-                '[,/mf]').str[0].str.replace('[\[\]"\']', '', regex=True)
+                r'[,/mf]').str[0].str.replace(r'[\[\]"\']', '', regex=True)
 
             cy_tagged['USAS Tags'] = cy_tagged['USAS Tags'].str.split(
                 '+').str[0]

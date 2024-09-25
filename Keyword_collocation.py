@@ -21,7 +21,7 @@ PUNCS = string.punctuation
 nlp = spacy.load('/freetxt/en_core_web_sm-3.2.0')
 
 
-PUNCS += '''!→()-[]{};:"\,<>./?@#$%&*_~.'''
+PUNCS += r'''!→()-[]{};:"\,<>./?@#$%&*_~.'''
 import time
 import os
 
@@ -398,10 +398,10 @@ class KWICAnalyser:
             cy_tagged = pd.read_csv(io.StringIO(response.text), sep='\t')
 
             cy_tagged['USAS Tags'] = cy_tagged['USAS Tags'].str.split(
-                '[,/mf]').str[0].str.replace('[\[\]"\']', '', regex=True)
+                r'[,/mf]').str[0].str.replace(r'[\[\]"\']', '', regex=True)
             # Remove characters following the pattern 'letter + number'
             cy_tagged['USAS Tags'] = cy_tagged['USAS Tags'].str.replace(
-                '([A-Za-z]+\d+).*', r'\1', regex=True)
+                r'([A-Za-z]+\d+).*', r'\1', regex=True)
 
             cy_tagged['USAS Tags'] = cy_tagged['USAS Tags'].str.split('+').str[0]
             sementic_tags = pd.read_csv('/freetxt/website/data/Welsh_pymusas_list.csv')

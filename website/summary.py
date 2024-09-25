@@ -37,8 +37,10 @@ from . import db
 from nltk import sent_tokenize
 from summa.summarizer import summarize as summa_summarizer
 en_stopwords = list(stopwords.words('english'))
-cy_stopwords = open('/freetxt/website/data/welsh_stopwords.txt', 'r', encoding='iso-8859-1').read().split('\n') # replaced 'utf8' with 'iso-8859-1'
-STOPWORDS = set(en_stopwords + cy_stopwords+ ["a", "an", "the", "and", "or", "in", "of", "to", "is", "it", "that", "on", "was", "for", "as", "with", "by"])
+with open('/freetxt/website/data/welsh_stopwords.txt', 'r', encoding='iso-8859-1') as f: # replaced 'utf8' with 'iso-8859-1'
+    cy_stopwords = f.read().split('\n')
+    f.close()
+STOPWORDS = set(en_stopwords + cy_stopwords + ["a", "an", "the", "and", "or", "in", "of", "to", "is", "it", "that", "on", "was", "for", "as", "with", "by"])
 
 PUNCS = string.punctuation
 

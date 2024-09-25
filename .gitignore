@@ -3,3 +3,4 @@ en_core_web_sm-3.2.0/
 huggingface_cache/
 website/Uploaded/*
 !website/Uploaded/Reviews_Lexham_Gardens_London.xlsx
+**/.DS_Store

@@ -38,9 +38,9 @@ from nltk.tokenize import sent_tokenize
 from .models import Feedback
 from . import db
 en_stopwords = list(stopwords.words('english'))
-cy_stopwords = open('/freetxt/website/data/welsh_stopwords.txt', 'r',
-                    # replaced 'utf8' with 'iso-8859-1'
-                    encoding='iso-8859-1').read().split('\n')
+with open('/freetxt/website/data/welsh_stopwords.txt', 'r', encoding='iso-8859-1') as f: # replaced 'utf8' with 'iso-8859-1'
+    cy_stopwords = f.read().split('\n')
+    f.close()
 STOPWORDS = set(en_stopwords + cy_stopwords + ["a", "an", "the", "and", "or",
                 "in", "of", "to", "is", "it", "that", "on", "was", "for", "as", "with", "by"])
 
@@ -309,7 +309,7 @@ def fileanalysis():
                 return jsonify({"message": "No data found in session", "data": []})
 
             # Convert the JSON back to DataFrame
-            data = pd.read_json(data_json)
+            data = pd.read_json(StringIO(data_json))
             # for col in data.columns:
             # Check if the first non-NaN value in the column looks like a date
             # sample_val = data[col].dropna().iloc[0] if not data[col].dropna().empty else None

@@ -33,7 +33,7 @@ LOGGING_CONFIG = {
             'level': 'DEBUG',
             'formatter': 'default',
             'class': 'logging.handlers.RotatingFileHandler',
-            'filename': 'info.log',
+            'filename': 'logs/info.log',
             'mode': 'a',
             'maxBytes': 1024 * 1024 * 5,
             'backupCount': 10
@@ -42,7 +42,7 @@ LOGGING_CONFIG = {
             'level': 'ERROR',
             'formatter': 'default',
             'class': 'logging.handlers.RotatingFileHandler',
-            'filename': 'error.log',
+            'filename': 'logs/error.log',
             'mode': 'a',
             'maxBytes': 1024 * 1024 * 5,
             'backupCount': 10
