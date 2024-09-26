@@ -219,7 +219,7 @@ class SentimentAnalyser:
 
         return results
 
-    def generate_scattertext_visualization(self, dfanalysis, language, filterStopwords=False):        
+    def generate_scattertext_visualization(self, dfanalysis, language, filterStopwords=False):
         # Get the DataFrame with sentiment analysis results
         df = dfanalysis
         positive_label = "Cadarnhaol" if language == 'cy' else "Positive"
@@ -239,7 +239,7 @@ class SentimentAnalyser:
         
         if filterStopwords:
             try:
-                corpus = corpus.remove_terms(terms=en_stopwords, ignore_absences=True)
+                corpus = corpus.remove_terms(terms=STOPWORDS, ignore_absences=True)
             except Exception as e:
                 print(f"Error removing stopwords:\n{e}")
 

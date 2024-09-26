@@ -1427,13 +1427,14 @@ def aspect_based_sentiment_analysis():
 
 @FileAnalysis.route('/regenerate-scatter-plot', methods=['POST'])
 def regenerate_scatter_plot():
-    exclude_stopwords = request.get_json(force=True)
+    data = request.get_json(force=True)
+    exclude_stopwords = data.get("excludeStopwords", False)
+    language = data.get("language", "en")
     
     try:
         if "df_sentiment" in session:
             df_sentiment = session["df_sentiment"]
             sentiment_analyser = SentimentAnalyser()
-            language = session["language"] if "language" in session else "en"
             
             with file_lock:
                 scatter_text_html = sentiment_analyser.generate_scattertext_visualization(

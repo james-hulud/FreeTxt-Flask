@@ -2368,7 +2368,6 @@ function renderWordCheckboxes(wordList) {
   selectAllContainer.appendChild(selectAllCheckbox);
   selectAllContainer.appendChild(selectAllLabel);
   wordListContainer.appendChild(selectAllContainer);
-  
 
   // Generate checkboxes for words
   wordList.sort().forEach((word) => {
@@ -4273,9 +4272,11 @@ function regenerateScatterPlot() {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      language: getCurrentLanguage(),
     },
-    body: excludeStopwords,
+    body: JSON.stringify({
+      excludeStopwords: excludeStopwords,
+      language: getCurrentLanguage(),
+    }),
   })
     .then((response) => response.json())
     .then((data) => {
