@@ -9,6 +9,5 @@ import gensim
 app = create_app(debug=True)
 global model_sg 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8000)
+    app.run(host='0.0.0.0', port=8000, debug=True)
     print(__name__)
-    
