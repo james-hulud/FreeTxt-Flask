@@ -563,9 +563,9 @@
   href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css"
 />
 
-Container here
-<div class="container-fluid d-flex">
-  <div class="plot-container plotly">
+<!-- Container
+<div class="container-fluid d-flex" style="overflow-x: scroll">
+  <div class="plot-container plotly" style="display: none">
     <div
       class="user-select-none svg-container"
       style="position: relative; width: 599.594px; height: 450px"
@@ -1074,6 +1074,7 @@ Container here
       </svg>
     </div>
   </div>
+
   <div id="AspectSentimentTable" class="container mt-5">
     <div id="data-table_wrapper" class="dataTables_wrapper no-footer">
       <div class="dataTables_length" id="data-table_length">
@@ -1122,29 +1123,6 @@ Container here
               aria-controls="data-table"
               rowspan="1"
               colspan="1"
-              aria-label="Aspect: activate to sort column ascending"
-              style="width: 81.2031px"
-            >
-              Aspect
-            </th>
-            <th
-              class="sorting sorting_desc"
-              tabindex="0"
-              aria-controls="data-table"
-              rowspan="1"
-              colspan="1"
-              aria-sort="descending"
-              aria-label="Sentiment Label: activate to sort column ascending"
-              style="width: 161.695px"
-            >
-              Sentiment Label
-            </th>
-            <th
-              class="sorting"
-              tabindex="0"
-              aria-controls="data-table"
-              rowspan="1"
-              colspan="1"
               aria-label="Confidence Score: activate to sort column ascending"
               style="width: 175.977px"
             >
@@ -1153,63 +1131,53 @@ Container here
           </tr>
         </thead>
         <tbody>
-          <tr class="odd">
+          <tr class="odd bg-success">
             <td>Great hotel</td>
-            <td>hotel</td>
             <td class="sorting_1">Positive</td>
             <td>1</td>
           </tr>
-          <tr class="even">
+          <tr class="even bg-warning">
             <td>Nice hotel at the center</td>
-            <td>hotel</td>
             <td class="sorting_1">Positive</td>
             <td>1</td>
           </tr>
-          <tr class="odd">
+          <tr class="odd bg-danger">
             <td>Great hotel !</td>
-            <td>hotel</td>
             <td class="sorting_1">Positive</td>
             <td>1</td>
           </tr>
           <tr class="even">
             <td>A smart clean PERFECTLY located hotel at AFFORDABLE Prices</td>
-            <td>hotel</td>
             <td class="sorting_1">Positive</td>
             <td>0.99</td>
           </tr>
           <tr class="odd">
             <td>Loved the Shellbourne Hotel</td>
-            <td>Hotel</td>
             <td class="sorting_1">Positive</td>
             <td>0.96</td>
           </tr>
           <tr class="even">
             <td>Value.... It is a budget hotel with a great staff</td>
-            <td>hotel</td>
             <td class="sorting_1">Positive</td>
             <td>0.95</td>
           </tr>
           <tr class="odd">
             <td>Great location average hotel</td>
-            <td>hotel</td>
             <td class="sorting_1">Positive</td>
             <td>0.74</td>
           </tr>
           <tr class="even">
             <td>good location average hotel .</td>
-            <td>hotel</td>
             <td class="sorting_1">Positive</td>
             <td>0.58</td>
           </tr>
           <tr class="odd">
             <td>This is not a three stars hotel !</td>
-            <td>hotel</td>
             <td class="sorting_1">Positive</td>
             <td>0.44</td>
           </tr>
           <tr class="even">
             <td>1 lexham gardens hotel (london earls court) by blr</td>
-            <td>hotel</td>
             <td class="sorting_1">Neutral</td>
             <td>0.98</td>
           </tr>
@@ -1259,7 +1227,7 @@ Container here
       </div>
     </div>
   </div>
-</div>
+</div> -->
 
 <h1
   data-lang-en="How would you like to start your analysis?"

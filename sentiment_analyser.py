@@ -19,7 +19,8 @@ nlp.add_pipe('sentencizer')
 # Update with the Welsh stopwords (source: https://github.com/techiaith/ataleiriau)
 en_stopwords = list(stopwords.words('english'))
 
-with open('/freetxt/website/data/welsh_stopwords.txt', 'r', encoding='iso-8859-1') as f: # replaced 'utf8' with 'iso-8859-1'
+# replaced 'utf8' with 'iso-8859-1'
+with open('/freetxt/website/data/welsh_stopwords.txt', 'r', encoding='iso-8859-1') as f:
     cy_stopwords = f.read().split('\n')
     f.close()
 STOPWORDS = set(en_stopwords + cy_stopwords)
@@ -209,6 +210,7 @@ class SentimentAnalyser:
                 text=row,
                 ignore_error=True,
                 eval_batch_size=32,
+                print_result=False
             )
 
             # Converts numpy arrays to python lists, for json
@@ -230,16 +232,17 @@ class SentimentAnalyser:
 
         # Parse the text using spaCy
         df['ParsedReview'] = df['Review'].apply(nlp)
-        
+
         corpus = st.CorpusFromParsedDocuments(
             df,
             category_col="Sentiment Label",
             parsed_col="ParsedReview"
         ).build()
-        
+
         if filterStopwords:
             try:
-                corpus = corpus.remove_terms(terms=STOPWORDS, ignore_absences=True)
+                corpus = corpus.remove_terms(
+                    terms=STOPWORDS, ignore_absences=True)
             except Exception as e:
                 print(f"Error removing stopwords:\n{e}")
 
@@ -315,7 +318,7 @@ class SentimentAnalyser:
         """
 
         timestamp = int(time.time())
-        
+
         # Adding script to plot
         html += custom_script
 

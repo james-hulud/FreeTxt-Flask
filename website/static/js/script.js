@@ -1272,6 +1272,150 @@ function displayABSAPlots(htmlPlotArray) {
   }
 }
 
+// function displayABSAResults(htmlPlotArray, sentimentData) {
+
+//   // Pie chart
+//   console.log("Display ABSA results called");
+
+//   const parentContainer = document.getElementById("ABSAResultsContainer");
+//   const pieChartsContainer = document.getElementById("AspectPieCharts");
+//   // Resets container
+//   pieChartsContainer.innerHTML = "";
+
+//   const lang = getCurrentLanguage();
+//   const ord = {
+//     0: "",
+//     1: lang === "en" ? "second " : "ail ",
+//     2: lang === "en" ? "third " : "drydedd ",
+//   };
+
+//   if (pieChartsContainer) {
+//     Array.from(htmlPlotArray).forEach(([htmlPlot, total], i) => {
+//       const container = document.createElement("div");
+//       container.classList.add("container", "p-0", "mt-5");
+
+//       const plotContainer = document.createElement("div");
+//       plotContainer.classList.add("container");
+
+//       const descContainer = document.createElement("h4");
+//       descContainer.classList.add("container");
+
+//       const totalContainer = document.createElement("h4");
+//       totalContainer.classList.add("container");
+
+//       const descText =
+//         i < 3
+//           ? lang === "en"
+//             ? `The figure displays the sentiment analysis of the ${ord[i]}most occuring aspect.`
+//             : `Mae'r ffigur yn dangos dadansoddiad sentiment yr ${ord[i]}agwedd sy'n digwydd amlaf.`
+//           : "";
+
+//       descContainer.innerText = descText;
+
+//       const totalText =
+//         lang === "en"
+//           ? `Total occurrences: ${total}`
+//           : `Cyfanswm digwyddiadau: ${total}`;
+//       totalContainer.innerText = totalText;
+
+//       const range = document.createRange();
+//       const docFrag = range.createContextualFragment(htmlPlot);
+
+//       plotContainer.appendChild(docFrag);
+//       container.appendChild(plotContainer);
+//       container.appendChild(descContainer);
+//       container.appendChild(totalContainer);
+
+//       pieChartsContainer.appendChild(container);
+//     });
+//     parentContainer.style.display = "block";
+//   } else {
+//     console.error("Cannot find container");
+//   }
+
+//   // Table
+//   // If item has 4 entries, is ABSA
+//   const isABSA = Object.keys(sentimentData[0]).length === 4 ? true : false;
+
+//   const tableContainer = isABSA ? "AspectSentimentTable" : "SentimentTable";
+
+//   // Resets table
+//   const outputDiv = document.getElementById(tableContainer);
+//   outputDiv.innerHTML = "";
+
+//   if (!sentimentData || sentimentData.length === 0) {
+//     outputDiv.innerText = "No sentiment analysis results to display.";
+//     return;
+//   }
+
+//   // Remove previously generated datatables
+//   if (document.getElementById("data-table")) {
+//     document.getElementById("data-table").remove();
+//   }
+
+//   const tableData = document.createElement("table");
+//   const theadData = document.createElement("thead");
+//   const tbodyData = document.createElement("tbody");
+//   tableData.id = "data-table";
+//   tableData.className = "w3-table w3-bordered w3-striped w3-hoverable w3-small";
+
+//   // Define headers
+//   const headers = isABSA
+//     ? getCurrentLanguage() === "cy"
+//       ? ["Adolygiad", "Agwedd", "Labelu Sentiment", "Sgôr Hyder"]
+//       : ["Review", "Aspect", "Sentiment Label", "Confidence Score"]
+//     : getCurrentLanguage() === "cy"
+//     ? ["Adolygiad", "Labelu Sentiment", "Sgôr Hyder"]
+//     : ["Review", "Sentiment Label", "Confidence Score"];
+
+//   // Create headers
+//   const tr = document.createElement("tr");
+//   headers.forEach((header) => {
+//     const th = document.createElement("th");
+//     th.innerText = header;
+//     tr.appendChild(th);
+//   });
+//   theadData.appendChild(tr);
+
+//   // Add data to table body
+//   sentimentData
+//     .sort((a, b) => b["Confidence Score"] - a["Confidence Score"])
+//     .forEach((row) => {
+//       const tr = document.createElement("tr");
+//       tr.innerHTML = isABSA
+//         ? `
+//             <td>${row.Review}</td>
+//             <td>${row["Aspect"]}</td>
+//             <td>${row["Sentiment Label"]}</td>
+//             <td>${row["Confidence Score"]}</td>
+//         `
+//         : `
+//             <td>${row.Review}</td>
+//             <td>${row["Sentiment Label"]}</td>
+//             <td>${row["Confidence Score"]}</td>
+//         `;
+//       tbodyData.appendChild(tr);
+//     });
+
+//   tableData.appendChild(theadData);
+//   tableData.appendChild(tbodyData);
+//   outputDiv.appendChild(tableData);
+
+//   // Initialize DataTable with language settings
+//   $(document).ready(function () {
+//     // Destroy previous data tables
+//     if ($.fn.DataTable.isDataTable("#data-table")) {
+//       $("#data-table").DataTable().clear().destroy();
+//     }
+
+//     $("#data-table").DataTable({
+//       order: [[2, "desc"]],
+//       language: getCurrentLanguage() === "cy" ? welshLanguageSettings : {},
+//     });
+//   });
+
+// }
+
 function setupSelectionListener(elementId) {
   const parentDiv = document.getElementById(elementId);
   const plotDiv = parentDiv.firstElementChild; // Targeting the first child div
@@ -3188,7 +3332,7 @@ function startABSA() {
     return;
   }
 
-  fetch("/aspect-based-analysis", {
+  fetch("/process_absa", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -3199,12 +3343,19 @@ function startABSA() {
       aspects: aspects,
     }),
   })
-    .then((response) => response.json())
+    .then((response) => {
+      if (!response.ok) {
+        alert("Error fetching response.");
+        throw new Error("Error executing ABSA");
+      }
+      return response.json();
+    })
     .then((data) => {
       if (data.status === "error") {
         alert(data.message);
         throw new Error("Error executing ABSA");
       }
+
       displayABSAPlots(data.plots);
       displaySentimentTable(data.sentimentData);
 

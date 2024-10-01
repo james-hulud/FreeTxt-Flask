@@ -1306,7 +1306,7 @@ def get_collos_data():
         return "Server encountered an error", 500
 
 
-@FileAnalysis.route('/aspect-based-analysis', methods=['POST'])
+@FileAnalysis.route('/process_absa', methods=['POST'])
 def aspect_based_sentiment_analysis():
     data = request.get_json()
     rows_data = data.get("rows", [])
@@ -1357,6 +1357,17 @@ def aspect_based_sentiment_analysis():
 
             if asp in aspect_sentiment_counter:
                 aspect_sentiment_counter[asp][entry["sentiment"][idx]] += 1
+    
+    # Filter any aspects out of the counter that are not present in the data set
+    aspect_sentiment_counter = {k: v for k, v in aspect_sentiment_counter.items() if not all(val == 0 for val in v.values())}
+    
+    # Var to hold table data for aspects with results
+    table_data = {aspect: [] for aspect in aspect_sentiment_counter} 
+    
+    # Table data structured as {"aspect": [("Row", "Confidence Score", "Sentiment Label"), ...], ...}
+    for entry in sentiment_data:
+        table_data[entry['Aspect'].lower()].append((entry['Review'], entry['Confidence Score'], entry['Sentiment Label']))
+    
 
     # Remove previous absa plots
     remove_previous_plots(
@@ -1383,10 +1394,6 @@ def aspect_based_sentiment_analysis():
     plot_title = "Sentiment Distribution for: " if language == "en" else "Dosbarthiad Sentiment ar gyfer: "
 
     for aspect, dict_val in aspect_sentiment_counter.items():
-        # If aspect is not in dataset, do not generate pie chart
-        if all(val == 0 for val in dict_val.values()):
-            continue
-
         fig = px.pie(values=dict_val.values(), names=dict_val.keys(),
                      title=f"{plot_title}{aspect}", color=dict_val.keys(),
                      color_discrete_map=color_map)
