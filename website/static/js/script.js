@@ -1042,13 +1042,8 @@ let currentData = []; // Global variable to hold the current subset of data
 
 //!
 function displaySentimentTable(sentimentData) {
-  // If item has 4 entries, is ABSA
-  const isABSA = Object.keys(sentimentData[0]).length === 4 ? true : false;
-
-  const tableContainer = isABSA ? "AspectSentimentTable" : "SentimentTable";
-
+  const outputDiv = document.getElementById("SentimentTable");
   // Resets table
-  const outputDiv = document.getElementById(tableContainer);
   outputDiv.innerHTML = "";
 
   if (!sentimentData || sentimentData.length === 0) {
@@ -1068,13 +1063,10 @@ function displaySentimentTable(sentimentData) {
   tableData.className = "w3-table w3-bordered w3-striped w3-hoverable w3-small";
 
   // Define headers
-  const headers = isABSA
-    ? getCurrentLanguage() === "cy"
-      ? ["Adolygiad", "Agwedd", "Labelu Sentiment", "Sgôr Hyder"]
-      : ["Review", "Aspect", "Sentiment Label", "Confidence Score"]
-    : getCurrentLanguage() === "cy"
-    ? ["Adolygiad", "Labelu Sentiment", "Sgôr Hyder"]
-    : ["Review", "Sentiment Label", "Confidence Score"];
+  const headers =
+    getCurrentLanguage() === "cy"
+      ? ["Adolygiad", "Labelu Sentiment", "Sgôr Hyder"]
+      : ["Review", "Sentiment Label", "Confidence Score"];
 
   // Create headers
   const tr = document.createElement("tr");
@@ -1090,14 +1082,7 @@ function displaySentimentTable(sentimentData) {
     .sort((a, b) => b["Confidence Score"] - a["Confidence Score"])
     .forEach((row) => {
       const tr = document.createElement("tr");
-      tr.innerHTML = isABSA
-        ? `
-            <td>${row.Review}</td>
-            <td>${row["Aspect"]}</td>
-            <td>${row["Sentiment Label"]}</td>
-            <td>${row["Confidence Score"]}</td>
-        `
-        : `
+      tr.innerHTML = `
             <td>${row.Review}</td>
             <td>${row["Sentiment Label"]}</td>
             <td>${row["Confidence Score"]}</td>
@@ -1272,149 +1257,113 @@ function displayABSAPlots(htmlPlotArray) {
   }
 }
 
-// function displayABSAResults(htmlPlotArray, sentimentData) {
+function displayABSAResults(tablePlotsData) {
+  // Pie chart
+  const parentContainer = document.getElementById("ABSAResultsContainer");
+  // Resets container
+  parentContainer.innerHTML = "";
 
-//   // Pie chart
-//   console.log("Display ABSA results called");
+  const lang = getCurrentLanguage();
 
-//   const parentContainer = document.getElementById("ABSAResultsContainer");
-//   const pieChartsContainer = document.getElementById("AspectPieCharts");
-//   // Resets container
-//   pieChartsContainer.innerHTML = "";
+  if (parentContainer) {
+    // Reset
+    parentContainer.innerHTML = "";
 
-//   const lang = getCurrentLanguage();
-//   const ord = {
-//     0: "",
-//     1: lang === "en" ? "second " : "ail ",
-//     2: lang === "en" ? "third " : "drydedd ",
-//   };
+    Array.from(tablePlotsData).forEach(
+      ([htmlPlot, total, fetchedTableData], i) => {
+        const aspectContainer = document.createElement("div");
+        aspectContainer.classList.add("container", "p-0", "my-5", "d-flex");
 
-//   if (pieChartsContainer) {
-//     Array.from(htmlPlotArray).forEach(([htmlPlot, total], i) => {
-//       const container = document.createElement("div");
-//       container.classList.add("container", "p-0", "mt-5");
+        // Plot
+        const plotCont = document.createElement("div");
+        plotCont.classList.add("container");
 
-//       const plotContainer = document.createElement("div");
-//       plotContainer.classList.add("container");
+        const pieCont = document.createElement("div");
+        pieCont.classList.add("container");
+        const docFrag = document
+          .createRange()
+          .createContextualFragment(htmlPlot);
+        pieCont.appendChild(docFrag);
 
-//       const descContainer = document.createElement("h4");
-//       descContainer.classList.add("container");
+        const totalEle = document.createElement("h4");
+        totalEle.classList.add("container");
+        const totalText =
+          lang === "en"
+            ? `Total occurrences: ${total}`
+            : `Cyfanswm digwyddiadau: ${total}`;
+        totalEle.innerText = totalText;
 
-//       const totalContainer = document.createElement("h4");
-//       totalContainer.classList.add("container");
+        plotCont.appendChild(totalEle);
+        plotCont.appendChild(pieCont);
+        aspectContainer.appendChild(plotCont);
 
-//       const descText =
-//         i < 3
-//           ? lang === "en"
-//             ? `The figure displays the sentiment analysis of the ${ord[i]}most occuring aspect.`
-//             : `Mae'r ffigur yn dangos dadansoddiad sentiment yr ${ord[i]}agwedd sy'n digwydd amlaf.`
-//           : "";
+        // Table
+        const tableContainer = document.createElement("div");
+        tableContainer.classList.add("container");
 
-//       descContainer.innerText = descText;
+        const tableData = document.createElement("table");
+        const theadData = document.createElement("thead");
+        const tbodyData = document.createElement("tbody");
+        tableData.id = `data-table-${i}`;
+        tableData.className =
+          "w3-table w3-bordered w3-striped w3-hoverable w3-small";
 
-//       const totalText =
-//         lang === "en"
-//           ? `Total occurrences: ${total}`
-//           : `Cyfanswm digwyddiadau: ${total}`;
-//       totalContainer.innerText = totalText;
+        // Define headers
+        const headers =
+          getCurrentLanguage() === "cy"
+            ? ["Adolygiad", "Sgôr Hyder"]
+            : ["Review", "Confidence Score"];
 
-//       const range = document.createRange();
-//       const docFrag = range.createContextualFragment(htmlPlot);
+        // Create headers
+        const tr = document.createElement("tr");
+        headers.forEach((header) => {
+          const th = document.createElement("th");
+          th.innerText = header;
+          tr.appendChild(th);
+        });
+        theadData.appendChild(tr);
 
-//       plotContainer.appendChild(docFrag);
-//       container.appendChild(plotContainer);
-//       container.appendChild(descContainer);
-//       container.appendChild(totalContainer);
+        // Add data to table body
+        fetchedTableData
+          .sort((a, b) => b["Confidence Score"] - a["Confidence Score"])
+          .forEach(([review, score, label]) => {
+            console.log(review, score, label);
+            const tr = document.createElement("tr");
+            let bgCol;
+            if (label === "Positive") bgCol = "bg-success";
+            else if (label === "Neutral") bgCol = "bg-warning";
+            else bgCol = "bg-danger";
+            tr.classList.add(bgCol);
+            tr.innerHTML = `
+                <td>${review}</td>
+                <td>${score}</td>
+            `;
+            tbodyData.appendChild(tr);
+          });
 
-//       pieChartsContainer.appendChild(container);
-//     });
-//     parentContainer.style.display = "block";
-//   } else {
-//     console.error("Cannot find container");
-//   }
+        // Initialize DataTable with language settings
+        $(document).ready(function () {
+          $(`#data-table-${i}`).DataTable({
+            order: [[1, "desc"]],
+            language:
+              getCurrentLanguage() === "cy" ? welshLanguageSettings : {},
+          });
+        });
 
-//   // Table
-//   // If item has 4 entries, is ABSA
-//   const isABSA = Object.keys(sentimentData[0]).length === 4 ? true : false;
+        tableData.appendChild(theadData);
+        tableData.appendChild(tbodyData);
+        tableContainer.appendChild(tableData);
+        aspectContainer.appendChild(tableContainer);
 
-//   const tableContainer = isABSA ? "AspectSentimentTable" : "SentimentTable";
+        parentContainer.appendChild(aspectContainer);
+      }
+    );
 
-//   // Resets table
-//   const outputDiv = document.getElementById(tableContainer);
-//   outputDiv.innerHTML = "";
-
-//   if (!sentimentData || sentimentData.length === 0) {
-//     outputDiv.innerText = "No sentiment analysis results to display.";
-//     return;
-//   }
-
-//   // Remove previously generated datatables
-//   if (document.getElementById("data-table")) {
-//     document.getElementById("data-table").remove();
-//   }
-
-//   const tableData = document.createElement("table");
-//   const theadData = document.createElement("thead");
-//   const tbodyData = document.createElement("tbody");
-//   tableData.id = "data-table";
-//   tableData.className = "w3-table w3-bordered w3-striped w3-hoverable w3-small";
-
-//   // Define headers
-//   const headers = isABSA
-//     ? getCurrentLanguage() === "cy"
-//       ? ["Adolygiad", "Agwedd", "Labelu Sentiment", "Sgôr Hyder"]
-//       : ["Review", "Aspect", "Sentiment Label", "Confidence Score"]
-//     : getCurrentLanguage() === "cy"
-//     ? ["Adolygiad", "Labelu Sentiment", "Sgôr Hyder"]
-//     : ["Review", "Sentiment Label", "Confidence Score"];
-
-//   // Create headers
-//   const tr = document.createElement("tr");
-//   headers.forEach((header) => {
-//     const th = document.createElement("th");
-//     th.innerText = header;
-//     tr.appendChild(th);
-//   });
-//   theadData.appendChild(tr);
-
-//   // Add data to table body
-//   sentimentData
-//     .sort((a, b) => b["Confidence Score"] - a["Confidence Score"])
-//     .forEach((row) => {
-//       const tr = document.createElement("tr");
-//       tr.innerHTML = isABSA
-//         ? `
-//             <td>${row.Review}</td>
-//             <td>${row["Aspect"]}</td>
-//             <td>${row["Sentiment Label"]}</td>
-//             <td>${row["Confidence Score"]}</td>
-//         `
-//         : `
-//             <td>${row.Review}</td>
-//             <td>${row["Sentiment Label"]}</td>
-//             <td>${row["Confidence Score"]}</td>
-//         `;
-//       tbodyData.appendChild(tr);
-//     });
-
-//   tableData.appendChild(theadData);
-//   tableData.appendChild(tbodyData);
-//   outputDiv.appendChild(tableData);
-
-//   // Initialize DataTable with language settings
-//   $(document).ready(function () {
-//     // Destroy previous data tables
-//     if ($.fn.DataTable.isDataTable("#data-table")) {
-//       $("#data-table").DataTable().clear().destroy();
-//     }
-
-//     $("#data-table").DataTable({
-//       order: [[2, "desc"]],
-//       language: getCurrentLanguage() === "cy" ? welshLanguageSettings : {},
-//     });
-//   });
-
-// }
+    parentContainer.style.display = "block";
+  } else {
+    console.error("Cannot find container");
+  }
+}
 
 function setupSelectionListener(elementId) {
   const parentDiv = document.getElementById(elementId);
@@ -3356,8 +3305,10 @@ function startABSA() {
         throw new Error("Error executing ABSA");
       }
 
-      displayABSAPlots(data.plots);
-      displaySentimentTable(data.sentimentData);
+      displayABSAResults(data.plots_table_data);
+
+      // displayABSAPlots(data.plots);
+      // displaySentimentTable(data.sentimentData);
 
       document.getElementById("SentimentAnalysisContainer").style.display =
         "none";

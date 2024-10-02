@@ -1368,7 +1368,8 @@ def aspect_based_sentiment_analysis():
     for entry in sentiment_data:
         table_data[entry['Aspect'].lower()].append((entry['Review'], entry['Confidence Score'], entry['Sentiment Label']))
     
-
+    # Creating pie charts
+    
     # Remove previous absa plots
     remove_previous_plots(
         "website/static/Sentiment_plots", "sentiment_pie_absa_")
@@ -1390,7 +1391,7 @@ def aspect_based_sentiment_analysis():
     aspect_sentiment_counter = dict(sorted(aspect_sentiment_counter.items(
     ), key=lambda item: item[1]["Positive"] + item[1]["Neutral"] + item[1]["Negative"], reverse=True))
 
-    html_plots = []
+    plots_table_data = []
     plot_title = "Sentiment Distribution for: " if language == "en" else "Dosbarthiad Sentiment ar gyfer: "
 
     for aspect, dict_val in aspect_sentiment_counter.items():
@@ -1423,12 +1424,16 @@ def aspect_based_sentiment_analysis():
                 f.write(content)
 
             # Tuple containing the plot, and number of total occurrences
-            html_plots.append((plot_html_pie, sum(dict_val.values())))
+            plots_table_data.append((plot_html_pie, sum(dict_val.values()), table_data[aspect]))
 
+    # return jsonify({
+    #     "status": "success",
+    #     "plots": html_plots,
+    #     "sentimentData": sentiment_data
+    # })
     return jsonify({
         "status": "success",
-        "plots": html_plots,
-        "sentimentData": sentiment_data
+        "plots_table_data": plots_table_data,
     })
 
 
