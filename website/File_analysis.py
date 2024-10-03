@@ -405,8 +405,8 @@ def sentiment_analysis(sentences, language, sentiment_classes=3):
             visualisation_text = visualisation_text_en
         elif language == 'cy':
             visualisation_text = visualisation_text_cy
+            
         # Generating the pie chart
-
         visualisation_text = "Visualisation by" if language == "en" else "Delweddu gan"
 
         if language == 'en':
@@ -1306,7 +1306,7 @@ def get_collos_data():
         return "Server encountered an error", 500
 
 
-@FileAnalysis.route('/process_absa', methods=['POST'])
+@FileAnalysis.route('/process-absa', methods=['POST'])
 def aspect_based_sentiment_analysis():
     data = request.get_json()
     rows_data = data.get("rows", [])
@@ -1342,12 +1342,9 @@ def aspect_based_sentiment_analysis():
     except Exception as e:
         current_app.logger.exception(f"Error: {e}")
         return jsonify({"status": "error", "message": f"Error: {e}. Please try again."}), 500
-
-    sentiment_data = [{"Review": result["text"], "Aspect": aspect, "Sentiment Label": result["sentiment"][idx],
-                      "Confidence Score": round(result["confidence"][idx], 2)} for result in results for idx, aspect in enumerate(result["aspect"])]
-
+        
     # Count sentiment results for pie chart
-    aspect_sentiment_counter = {aspect: {
+    aspect_sentiment_counter = {aspect.lower(): {
         "Positive": 0, "Neutral": 0, "Negative": 0} for aspect in aspects_data}
 
     for entry in results:
@@ -1361,12 +1358,13 @@ def aspect_based_sentiment_analysis():
     # Filter any aspects out of the counter that are not present in the data set
     aspect_sentiment_counter = {k: v for k, v in aspect_sentiment_counter.items() if not all(val == 0 for val in v.values())}
     
-    # Var to hold table data for aspects with results
-    table_data = {aspect: [] for aspect in aspect_sentiment_counter} 
-    
-    # Table data structured as {"aspect": [("Row", "Confidence Score", "Sentiment Label"), ...], ...}
-    for entry in sentiment_data:
-        table_data[entry['Aspect'].lower()].append((entry['Review'], entry['Confidence Score'], entry['Sentiment Label']))
+    table_data = {aspect: [] for aspect in aspect_sentiment_counter}
+    # Table data structured as {"aspect": [("Row", "Confidence Score", "Sentiment Label"), ...], ...}        
+    # Populates table_data
+    [table_data[aspect.lower()].append(
+        (entry["text"], round(entry["confidence"][idx], 2), entry["sentiment"][idx]))
+        for entry in results
+        for idx, aspect in enumerate(entry["aspect"])]
     
     # Creating pie charts
     
@@ -1393,9 +1391,19 @@ def aspect_based_sentiment_analysis():
 
     plots_table_data = []
     plot_title = "Sentiment Distribution for: " if language == "en" else "Dosbarthiad Sentiment ar gyfer: "
+    
+    names = {
+        "Positive": None,
+        "Neutral": None,
+        "Negative": None
+    } if language == "en" else {
+        "Cadarnhaol": None,
+        "Niwtral": None,
+        "Negyddol": None
+    }
 
     for aspect, dict_val in aspect_sentiment_counter.items():
-        fig = px.pie(values=dict_val.values(), names=dict_val.keys(),
+        fig = px.pie(values=dict_val.values(), names=names.keys(),
                      title=f"{plot_title}{aspect}", color=dict_val.keys(),
                      color_discrete_map=color_map)
 
@@ -1425,12 +1433,7 @@ def aspect_based_sentiment_analysis():
 
             # Tuple containing the plot, and number of total occurrences
             plots_table_data.append((plot_html_pie, sum(dict_val.values()), table_data[aspect]))
-
-    # return jsonify({
-    #     "status": "success",
-    #     "plots": html_plots,
-    #     "sentimentData": sentiment_data
-    # })
+            
     return jsonify({
         "status": "success",
         "plots_table_data": plots_table_data,

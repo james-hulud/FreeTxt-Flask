@@ -617,3 +617,15 @@ input[type="checkbox"] {
   max-width: 100%;
   max-height: 100vh;
 }
+
+.table-positive-bg {
+  background-color: #c5e17a !important;
+}
+
+.table-neutral-bg {
+  background-color: #b0b0b0 !important;
+}
+
+.table-negative-bg {
+  background-color: #ff8a3d !important;
+}

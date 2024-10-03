@@ -1196,173 +1196,144 @@ function displayPlot(plotHtml, elementId) {
   }
 }
 
-//! ABSA
-function displayABSAPlots(htmlPlotArray) {
-  parentContainer = document.getElementById("ABSAResultsContainer");
-  const pieChartsContainer = document.getElementById("AspectPieCharts");
-  // Resets container
-  pieChartsContainer.innerHTML = "";
-
-  const lang = getCurrentLanguage();
-  const ord = {
-    0: "",
-    1: lang === "en" ? "second " : "ail ",
-    2: lang === "en" ? "third " : "drydedd ",
-  };
-
-  if (pieChartsContainer) {
-    Array.from(htmlPlotArray).forEach(([htmlPlot, total], i) => {
-      // console.log("totals");
-      // console.log(total);
-      const container = document.createElement("div");
-      container.classList.add("container", "p-0", "mt-5");
-
-      const plotContainer = document.createElement("div");
-      plotContainer.classList.add("container");
-
-      const descContainer = document.createElement("h4");
-      descContainer.classList.add("container");
-
-      const totalContainer = document.createElement("h4");
-      totalContainer.classList.add("container");
-
-      const descText =
-        i < 3
-          ? lang === "en"
-            ? `The figure displays the sentiment analysis of the ${ord[i]}most occuring aspect.`
-            : `Mae'r ffigur yn dangos dadansoddiad sentiment yr ${ord[i]}agwedd sy'n digwydd amlaf.`
-          : "";
-
-      descContainer.innerText = descText;
-
-      const totalText =
-        lang === "en"
-          ? `Total occurrences: ${total}`
-          : `Cyfanswm digwyddiadau: ${total}`;
-      totalContainer.innerText = totalText;
-
-      const range = document.createRange();
-      const docFrag = range.createContextualFragment(htmlPlot);
-
-      plotContainer.appendChild(docFrag);
-      container.appendChild(plotContainer);
-      container.appendChild(descContainer);
-      container.appendChild(totalContainer);
-
-      pieChartsContainer.appendChild(container);
-    });
-    parentContainer.style.display = "block";
-  } else {
-    console.error("Cannot find container");
-  }
-}
-
 function displayABSAResults(tablePlotsData) {
-  // Pie chart
   const parentContainer = document.getElementById("ABSAResultsContainer");
+
+  if (!parentContainer) {
+    console.error("Cannot find container.");
+    return;
+  }
+
   // Resets container
   parentContainer.innerHTML = "";
 
   const lang = getCurrentLanguage();
 
-  if (parentContainer) {
-    // Reset
-    parentContainer.innerHTML = "";
+  // Ordinals for pie charts
+  const ord = {
+    0: "",
+    1: lang === "en" ? "second " : "ail ",
+    2: lang === "en" ? "third " : "drydedd ",
+  };
+  // Reset
+  parentContainer.innerHTML = "";
 
-    Array.from(tablePlotsData).forEach(
-      ([htmlPlot, total, fetchedTableData], i) => {
-        const aspectContainer = document.createElement("div");
-        aspectContainer.classList.add("container", "p-0", "my-5", "d-flex");
-
-        // Plot
-        const plotCont = document.createElement("div");
-        plotCont.classList.add("container");
-
-        const pieCont = document.createElement("div");
-        pieCont.classList.add("container");
-        const docFrag = document
-          .createRange()
-          .createContextualFragment(htmlPlot);
-        pieCont.appendChild(docFrag);
-
-        const totalEle = document.createElement("h4");
-        totalEle.classList.add("container");
-        const totalText =
-          lang === "en"
-            ? `Total occurrences: ${total}`
-            : `Cyfanswm digwyddiadau: ${total}`;
-        totalEle.innerText = totalText;
-
-        plotCont.appendChild(totalEle);
-        plotCont.appendChild(pieCont);
-        aspectContainer.appendChild(plotCont);
-
-        // Table
-        const tableContainer = document.createElement("div");
-        tableContainer.classList.add("container");
-
-        const tableData = document.createElement("table");
-        const theadData = document.createElement("thead");
-        const tbodyData = document.createElement("tbody");
-        tableData.id = `data-table-${i}`;
-        tableData.className =
-          "w3-table w3-bordered w3-striped w3-hoverable w3-small";
-
-        // Define headers
-        const headers =
-          getCurrentLanguage() === "cy"
-            ? ["Adolygiad", "Sgôr Hyder"]
-            : ["Review", "Confidence Score"];
-
-        // Create headers
-        const tr = document.createElement("tr");
-        headers.forEach((header) => {
-          const th = document.createElement("th");
-          th.innerText = header;
-          tr.appendChild(th);
-        });
-        theadData.appendChild(tr);
-
-        // Add data to table body
-        fetchedTableData
-          .sort((a, b) => b["Confidence Score"] - a["Confidence Score"])
-          .forEach(([review, score, label]) => {
-            console.log(review, score, label);
-            const tr = document.createElement("tr");
-            let bgCol;
-            if (label === "Positive") bgCol = "bg-success";
-            else if (label === "Neutral") bgCol = "bg-warning";
-            else bgCol = "bg-danger";
-            tr.classList.add(bgCol);
-            tr.innerHTML = `
-                <td>${review}</td>
-                <td>${score}</td>
-            `;
-            tbodyData.appendChild(tr);
-          });
-
-        // Initialize DataTable with language settings
-        $(document).ready(function () {
-          $(`#data-table-${i}`).DataTable({
-            order: [[1, "desc"]],
-            language:
-              getCurrentLanguage() === "cy" ? welshLanguageSettings : {},
-          });
-        });
-
-        tableData.appendChild(theadData);
-        tableData.appendChild(tbodyData);
-        tableContainer.appendChild(tableData);
-        aspectContainer.appendChild(tableContainer);
-
-        parentContainer.appendChild(aspectContainer);
-      }
+  Array.from(tablePlotsData).forEach(([htmlPlot, total, tableData], i) => {
+    // Creates aspect container
+    const aspectContainer = document.createElement("div");
+    aspectContainer.classList.add(
+      "container-fluid",
+      "my-5",
+      "d-flex",
+      "flex-column",
+      "flex-lg-row"
     );
 
-    parentContainer.style.display = "block";
-  } else {
-    console.error("Cannot find container");
-  }
+    // Add plot
+    aspectContainer.appendChild(
+      createPlotContainer(htmlPlot, total, i, lang, ord)
+    );
+
+    // Add table
+    aspectContainer.appendChild(createTableContainer(tableData, i, lang));
+
+    // Append to parent
+    parentContainer.appendChild(aspectContainer);
+  });
+
+  parentContainer.style.display = "block";
+}
+
+function createPlotContainer(htmlPlot, total, index, lang, ordinals) {
+  // Plot
+  const plotCont = document.createElement("div");
+  plotCont.classList.add("container-fluid", "mb-5", "mw-100");
+
+  const pieCont = document.createElement("div");
+  pieCont.classList.add("container");
+  const docFrag = document.createRange().createContextualFragment(htmlPlot);
+  pieCont.appendChild(docFrag);
+
+  const totalEle = document.createElement("h4");
+  totalEle.classList.add("container");
+  const totalText =
+    lang === "en"
+      ? `Total occurrences: ${total}`
+      : `Cyfanswm digwyddiadau: ${total}`;
+  totalEle.innerText = totalText;
+
+  const descEle = document.createElement("h4");
+  descEle.classList.add("container");
+  const descText =
+    index < 3
+      ? lang === "en"
+        ? `The figure displays the sentiment analysis of the ${ordinals[index]}most occuring aspect.`
+        : `Mae'r ffigur yn dangos dadansoddiad sentiment yr ${ordinals[index]}agwedd sy'n digwydd amlaf.`
+      : "";
+  descEle.innerText = descText;
+
+  plotCont.appendChild(pieCont);
+  plotCont.appendChild(totalEle);
+  plotCont.appendChild(descEle);
+
+  return plotCont;
+}
+
+function createTableContainer(tableData, index, lang) {
+  const tableContainer = document.createElement("div");
+  tableContainer.classList.add("container-fluid", "pb-5", "mw-100");
+
+  const tableEle = document.createElement("table");
+  const theadData = document.createElement("thead");
+  const tbodyData = document.createElement("tbody");
+  tableEle.id = `data-table-${index}`;
+  tableEle.className = "w3-table w3-bordered w3-striped w3-hoverable w3-small";
+
+  // Define headers
+  const headers =
+    lang === "cy"
+      ? ["Adolygiad", "Sgôr Hyder"]
+      : ["Review", "Confidence Score"];
+
+  // Create headers
+  const tr = document.createElement("tr");
+  headers.forEach((header) => {
+    const th = document.createElement("th");
+    th.innerText = header;
+    tr.appendChild(th);
+  });
+  theadData.appendChild(tr);
+
+  // Add data to table body
+  tableData
+    .sort((a, b) => b["Confidence Score"] - a["Confidence Score"])
+    .forEach(([review, score, label]) => {
+      const tr = document.createElement("tr");
+      let bgCol;
+      if (label === "Positive") bgCol = "table-positive-bg";
+      else if (label === "Neutral") bgCol = "table-neutral-bg";
+      else bgCol = "table-negative-bg";
+      tr.classList.add(bgCol);
+      tr.innerHTML = `
+                <td class="font-weight-bold">${review}</td>
+                <td class="font-weight-bold">${score}</td>
+            `;
+      tbodyData.appendChild(tr);
+    });
+
+  // Initialize DataTable with language settings
+  $(document).ready(function () {
+    $(`#data-table-${index}`).DataTable({
+      order: [[1, "desc"]],
+      language: lang === "cy" ? welshLanguageSettings : {},
+    });
+  });
+
+  tableEle.appendChild(theadData);
+  tableEle.appendChild(tbodyData);
+  tableContainer.appendChild(tableEle);
+
+  return tableContainer;
 }
 
 function setupSelectionListener(elementId) {
@@ -3231,10 +3202,7 @@ function handleAspectInputChanges() {
   const listSpan = $("#aspects-input-list");
 
   const aspectsText = $("#absa-aspects-to-analyze").val();
-  const aspects = aspectsText
-    .split(",")
-    .map((aspect) => aspect.trim().toLowerCase())
-    .filter((aspect) => aspect.length > 0);
+  const aspects = processAspects(aspectsText);
 
   let aspectsString = "";
 
@@ -3257,15 +3225,19 @@ function handleAspectInputChanges() {
   }
 }
 
+function processAspects(aspects) {
+  return aspects
+    .split(",")
+    .map((aspect) => aspect.trim().toLowerCase())
+    .filter((aspect) => aspect.length > 0);
+}
+
 function startABSA() {
   // Get data from text field
   const aspectsText = $("#absa-aspects-to-analyze").val();
 
   // Filter text
-  const aspects = aspectsText
-    .split(",")
-    .map((aspect) => aspect.trim().toLowerCase())
-    .filter((aspect) => aspect.length > 0);
+  const aspects = processAspects(aspectsText);
 
   if (aspects.length < 1) {
     alert("No aspects entered. Enter an aspect and try again.");
@@ -3276,12 +3248,7 @@ function startABSA() {
   const loadingElement = document.getElementById("loading");
   loadingElement.style.display = "flex";
 
-  if (aspects.length === 0) {
-    alert("Please enter aspects to analyse.");
-    return;
-  }
-
-  fetch("/process_absa", {
+  fetch("/process-absa", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -3306,9 +3273,6 @@ function startABSA() {
       }
 
       displayABSAResults(data.plots_table_data);
-
-      // displayABSAPlots(data.plots);
-      // displaySentimentTable(data.sentimentData);
 
       document.getElementById("SentimentAnalysisContainer").style.display =
         "none";
