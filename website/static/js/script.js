@@ -1230,15 +1230,18 @@ function displayABSAResults(tablePlotsData) {
     );
 
     // Add plot
-    aspectContainer.appendChild(
-      createPlotContainer(htmlPlot, total, i, lang, ord)
-    );
+    plotContainer = createPlotContainer(htmlPlot, total, i, lang, ord);
+    aspectContainer.appendChild(plotContainer);
 
     // Add table
-    aspectContainer.appendChild(createTableContainer(tableData, i, lang));
+    tableContainer = createTableContainer(tableData, i, lang);
+    aspectContainer.appendChild(tableContainer);
 
     // Append to parent
     parentContainer.appendChild(aspectContainer);
+
+    // Resize plot
+    Plotly.Plots.resize(plotContainer.querySelector(".plotly-graph-div"));
   });
 
   parentContainer.style.display = "block";
@@ -1247,7 +1250,7 @@ function displayABSAResults(tablePlotsData) {
 function createPlotContainer(htmlPlot, total, index, lang, ordinals) {
   // Plot
   const plotCont = document.createElement("div");
-  plotCont.classList.add("container-fluid", "mb-5", "mw-100");
+  plotCont.classList.add("container-fluid", "mb-5", "absa-plot-container");
 
   const pieCont = document.createElement("div");
   pieCont.classList.add("container");
@@ -1281,7 +1284,11 @@ function createPlotContainer(htmlPlot, total, index, lang, ordinals) {
 
 function createTableContainer(tableData, index, lang) {
   const tableContainer = document.createElement("div");
-  tableContainer.classList.add("container-fluid", "pb-5", "mw-100");
+  tableContainer.classList.add(
+    "container-fluid",
+    "pb-5",
+    "absa-table-container"
+  );
 
   const tableEle = document.createElement("table");
   const theadData = document.createElement("thead");
@@ -1315,8 +1322,8 @@ function createTableContainer(tableData, index, lang) {
       else bgCol = "table-negative-bg";
       tr.classList.add(bgCol);
       tr.innerHTML = `
-                <td class="font-weight-bold">${review}</td>
-                <td class="font-weight-bold">${score}</td>
+                <td class="text-light">${review}</td>
+                <td class="text-light">${score}</td>
             `;
       tbodyData.appendChild(tr);
     });

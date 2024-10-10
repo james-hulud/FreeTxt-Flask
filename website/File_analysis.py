@@ -37,6 +37,7 @@ from nltk.corpus import stopwords
 from nltk.tokenize import sent_tokenize
 from .models import Feedback
 from . import db
+from collections import defaultdict
 en_stopwords = list(stopwords.words('english'))
 with open('/freetxt/website/data/welsh_stopwords.txt', 'r', encoding='iso-8859-1') as f: # replaced 'utf8' with 'iso-8859-1'
     cy_stopwords = f.read().split('\n')
@@ -476,8 +477,6 @@ def sentiment_analysis(sentences, language, sentiment_classes=3):
         plot_html_bar = fig_bar.to_html(full_html=False)
         return data, sentiment_counts, plot_html_pie, plot_html_bar
     return None, None, None
-
-#! Update for ABSA
 
 
 @FileAnalysis.route('/update_sentiment', methods=['POST'])
@@ -1358,30 +1357,37 @@ def aspect_based_sentiment_analysis():
     # Filter any aspects out of the counter that are not present in the data set
     aspect_sentiment_counter = {k: v for k, v in aspect_sentiment_counter.items() if not all(val == 0 for val in v.values())}
     
-    table_data = {aspect: [] for aspect in aspect_sentiment_counter}
-    # Table data structured as {"aspect": [("Row", "Confidence Score", "Sentiment Label"), ...], ...}        
-    # Populates table_data
-    [table_data[aspect.lower()].append(
-        (entry["text"], round(entry["confidence"][idx], 2), entry["sentiment"][idx]))
-        for entry in results
-        for idx, aspect in enumerate(entry["aspect"])]
+    # Initialize the table_data as a defaultdict
+    table_data = defaultdict(list)
+
+    # Iterate over results and append to table_data with highlighted text
+    for entry in results:
+        aspect_occurrences = defaultdict(int)
+
+        for idx, aspect in enumerate(entry["aspect"]):
+            highlighted_text = highlight_aspect(entry["text"], aspect, aspect_occurrences[aspect])
+
+            table_data[aspect.lower()].append(
+                (highlighted_text, round(entry["confidence"][idx], 2), entry["sentiment"][idx])
+            )
+
+            aspect_occurrences[aspect] += 1
     
     # Creating pie charts
-    
     # Remove previous absa plots
     remove_previous_plots(
         "website/static/Sentiment_plots", "sentiment_pie_absa_")
 
     color_map = {
         "Very negative": "#ff3333",
-        "Negative": "#ff8a3d",
-        "Neutral": "#b0b0b0",
-        "Positive": "#c5e17a",
+        "Negative": "#e2892b",
+        "Neutral": "#849bba",
+        "Positive": "#384d6c",
         "Very positive": "#6ebd45",
         "Negyddol Iawn": "#ff3333",
-        "Negyddol": "#ff8a3d",
-        "Niwtral": "#b0b0b0",
-        "Cadarnhaol": "#c5e17a",
+        "Negyddol": "#e2892b",
+        "Niwtral": "#849bba",
+        "Cadarnhaol": "#384d6c",
         "Cadarnhaol Iawn": "#6ebd45"
     }
 
@@ -1406,7 +1412,11 @@ def aspect_based_sentiment_analysis():
         fig = px.pie(values=dict_val.values(), names=names.keys(),
                      title=f"{plot_title}{aspect}", color=dict_val.keys(),
                      color_discrete_map=color_map)
-
+        
+        fig.update_layout({
+            'autosize': True
+        })
+        
         plot_html_pie = fig.to_html(full_html=False)
 
         fig.write_image(
@@ -1480,3 +1490,20 @@ def remove_previous_plots(directory, substring):
                 # print("Removed file:", file_path)
             except Exception as e:
                 current_app.logger.exception("Error removing old plots", e)
+
+def highlight_aspect(text, aspect, occurrence):
+    word_to_highlight = aspect.lower()
+    matches = list(re.finditer(re.escape(word_to_highlight), text, re.IGNORECASE))
+
+    if len(matches) <= occurrence:
+        return text  # If not enough occurrences, return the original text
+
+    match = matches[occurrence]
+
+    highlighted_text = (
+        text[:match.start()] +
+        f'<span class="highlighted-aspect">{text[match.start():match.end()]}</span>' +
+        text[match.end():]
+    )
+
+    return highlighted_text
