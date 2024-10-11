@@ -1371,7 +1371,7 @@ def aspect_based_sentiment_analysis():
                 (highlighted_text, round(entry["confidence"][idx], 2), entry["sentiment"][idx])
             )
 
-            aspect_occurrences[aspect] += 1
+            aspect_occurrences[aspect.lower()] += 1
     
     # Creating pie charts
     # Remove previous absa plots
