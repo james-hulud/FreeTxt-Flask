@@ -1191,6 +1191,8 @@ function displayPlot(plotHtml, elementId) {
         oldScript.parentNode.replaceChild(newScript, oldScript);
       }
     );
+    // Resize plot
+    Plotly.Plots.resize(plotContainer.querySelector(".plotly-graph-div"));
   } else {
     console.error("Cannot find the", elementId, "element");
   }
@@ -2054,24 +2056,14 @@ function sendSelectedRows() {
 
         handleWordTreeData(data.wordTreeData, data.search_word);
         document.getElementById("search_word").value = data.search_word;
-        populateDropdown(data.wordFrequencies);
 
-        // Stores word frequency data
-        wordFrequencies = data.wordFrequencies;
-        unfilteredWordFrequencies = data.unfilteredWordFrequencies;
-
-        semantictags = data.sortedUniqueTags;
         document.getElementById("tab-buttons").classList.remove("hidden"); // Show the tab buttons
         document.getElementById("tabs").classList.remove("hidden"); // Show the tabs content
         showTab(0); // Automatically switch to the analysis tab
-
-        const summaryElement = document.getElementById("summary");
-        summaryElement.textContent = data.summary
-          ? data.summary
-          : "Could not generate summary.";
-
         const iframeElem = document.getElementById("scattertextIframe");
         sendWordCloudRequest();
+        sendSummaryRequest();
+        sendKWICRequest();
         iframeElem.style.opacity = 0.99;
         requestAnimationFrame(() => {
           iframeElem.src = data.scatterTextHtml + "?t=" + new Date().getTime();
@@ -2269,6 +2261,41 @@ function sendWordCloudRequest() {
     })
     .catch((error) => {
       console.error("Error generating word cloud:", error);
+    });
+}
+
+function sendSummaryRequest() {
+  fetch("/process_summary", {
+    method: "POST",
+  })
+    .then((request) => {
+      return request.json();
+    })
+    .then((data) => {
+      const summaryElement = document.getElementById("summary");
+      summaryElement.textContent = data ? data : "Could not generate summary.";
+    })
+    .catch((err) => {
+      console.error(err);
+    });
+}
+
+function sendKWICRequest() {
+  fetch("/process_kwic_data", {
+    method: "POST",
+  })
+    .then((request) => {
+      return request.json();
+    })
+    .then((data) => {
+      // Stores word frequency data
+      wordFrequencies = data.wordFrequencies;
+      populateDropdown(data.wordFrequencies);
+      unfilteredWordFrequencies = data.unfilteredWordFrequencies;
+      semantictags = data.sortedUniqueTags;
+    })
+    .catch((err) => {
+      console.error(err);
     });
 }
 

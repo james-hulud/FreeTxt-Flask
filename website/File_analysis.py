@@ -533,11 +533,12 @@ def clear_session():
 
 @FileAnalysis.route('/process_rows', methods=['GET', 'POST'])
 def handle_selected_rows():
+    t = time.time()
     data = request.get_json()
     merged_rows = data.get('mergedData', [])
-    # print(merged_rows)
     language = data.get('language', 'en')
     session['language'] = language
+    
     # Get word frequencies
     words = []
     for sentence in merged_rows:
@@ -546,8 +547,9 @@ def handle_selected_rows():
             word for word in extracted_words if word not in STOPWORDS]
         words.extend(filtered_words)
 
-        # Counting frequencies
+    # Counting frequencies
     word_frequencies = dict(Counter(words))
+    
     # Sorting by highest frequency
     sorted_word_frequencies = dict(
         sorted(word_frequencies.items(), key=lambda item: item[1], reverse=True))
@@ -586,41 +588,60 @@ def handle_selected_rows():
 
     search_word = cleaned_word
     df = pd.DataFrame(merged_rows, columns=['text'])
-    analyser = KWICAnalyser(df, language)
-    # Initialize the KWICAnalyser with the merged rows
-    # Adding to session for word cloud to use
-    session["tokens_with_semantic_tags"] = analyser.tokens_with_semantic_tags
-
-    # ucrel api used
-    sorted_unique_tags = analyser.get_sorted_unique_tags()
-    word_frequencies = analyser.get_word_frequencies()
-
-    unfiltered_word_frequencies = analyser.get_word_frequencies(
-        isUnfiltered=True)
-    session['unfiltered_word_frequencies'] = unfiltered_word_frequencies
-    session['word_frequencies'] = word_frequencies
-
-    session['mergedData'] = merged_rows
-
+    
+    # Data for other routes
+    session['df_data'] = df # /process_kwic_data
+    session['mergedData'] = merged_rows # /process_summary
+    
     session['sentiment_data'] = sentiment_data
+    
+    print("process_rows:", time.time() - t)
 
-    summary = summarize_text(merged_rows)
     return jsonify({
         "status": "success",
-        "wordFrequencies": word_frequencies,
-        "unfilteredWordFrequencies": unfiltered_word_frequencies,
         "sentimentData": sentiment_data,
         "sentimentCounts": sentiment_counts,
         'sentimentPlotPie': pie_chart_html,
         'sentimentPlotBar': bar_chart_html,
         "wordTreeData": wordTreeData,
         "search_word": search_word,
-        "summary": summary,
-        "sortedUniqueTags": sorted_unique_tags,
         "scatterTextHtml": scatter_text_html
     })
 
+@FileAnalysis.route("/process_summary", methods=['GET', 'POST'])
+def process_summary():
+    if 'mergedData' in session:
+        merged_rows = session['mergedData']
+        return jsonify(summarize_text(merged_rows))
+    return jsonify({"status": "error", "message": f"Error processing summary."})
 
+@FileAnalysis.route("/process_kwic_data", methods=['GET', 'POST'])
+def process_kwic():
+    if 'df_data' in session:
+        df = session['df_data']
+        language = session['language'] if 'language' in session else 'en'
+        
+        # Initialize the KWICAnalyser with the merged rows
+        analyser = KWICAnalyser(df, language)
+        
+        # Adding to session for word cloud to use
+        session["tokens_with_semantic_tags"] = analyser.tokens_with_semantic_tags
+        sorted_unique_tags = analyser.get_sorted_unique_tags()
+        word_frequencies = analyser.get_word_frequencies()
+        unfiltered_word_frequencies = analyser.get_word_frequencies(
+            isUnfiltered=True)
+        session['unfiltered_word_frequencies'] = unfiltered_word_frequencies
+        session['word_frequencies'] = word_frequencies
+        
+        return jsonify({
+            "status": "success",
+            "wordFrequencies": word_frequencies,
+            "unfilteredWordFrequencies": unfiltered_word_frequencies,
+            "sortedUniqueTags": sorted_unique_tags
+        })
+    
+    return jsonify({"status": "error", "message": "Error getting KWIC data."})
+        
 @FileAnalysis.route('/get_exampledata_files')
 def get_files():
     directory = '/freetxt/website/static/example-data-hub'
@@ -628,11 +649,9 @@ def get_files():
         os.path.join(directory, f))]
     return jsonify(files)
 
-
 # Cleaning function
 def clean_review(review):
     return review.translate(str.maketrans('', '', PUNCS)).lower()
-
 
 @FileAnalysis.route('/generate_wordcloud', methods=['POST', 'GET'])
 def generate_wordcloud():
